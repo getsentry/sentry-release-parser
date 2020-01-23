@@ -1,5 +1,6 @@
 [package]
 name = "sentry-release-parser"
+description = "A parser for the sentry release name format"
 version = "0.1.0"
 authors = ["Sentry <hello@sentry.io>"]
 edition = "2018"
