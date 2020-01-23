@@ -1,4 +1,4 @@
-use sentry_release_parser::{Release, InvalidRelease};
+use sentry_release_parser::{InvalidRelease, Release};
 
 #[test]
 fn test_basic() {
@@ -166,8 +166,14 @@ fn test_basic_ios_ver2() {
 #[test]
 fn test_invalid_releases() {
     assert_eq!(Release::parse("  foo   ").unwrap().version_raw(), "foo");
-    assert_eq!(Release::parse("foo/bar"), Err(InvalidRelease::BadCharacters));
+    assert_eq!(
+        Release::parse("foo/bar"),
+        Err(InvalidRelease::BadCharacters)
+    );
     assert_eq!(Release::parse("."), Err(InvalidRelease::RestrictedName));
     assert_eq!(Release::parse(".."), Err(InvalidRelease::RestrictedName));
-    assert_eq!(Release::parse("latest"), Err(InvalidRelease::RestrictedName));
+    assert_eq!(
+        Release::parse("latest"),
+        Err(InvalidRelease::RestrictedName)
+    );
 }

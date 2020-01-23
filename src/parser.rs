@@ -114,6 +114,32 @@ impl<'a> Version<'a> {
         })
     }
 
+    /// Converts the version into a semver.
+    ///
+    /// Requires the `semver` feature.
+    #[cfg(feature = "semver")]
+    pub fn as_semver(&self) -> semver::Version {
+        fn split(s: &str) -> Vec<semver::Identifier> {
+            s.split('.')
+                .map(|item| {
+                    if let Some(val) = item.parse::<u64>() {
+                        semver::Identifier::Numeric(val)
+                    } else {
+                        semver::Identifier::AlphaNumeric(val.into())
+                    }
+                })
+                .collect()
+        }
+
+        semver::Version {
+            major: self.major,
+            minor: self.minor,
+            patch: self.patch,
+            pre: split(self.pre),
+            build: split(self.build_code),
+        }
+    }
+
     /// Returns the major version component.
     pub fn major(&self) -> u64 {
         self.major
