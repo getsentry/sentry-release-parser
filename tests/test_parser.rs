@@ -79,3 +79,45 @@ fn test_release_is_hash() {
     );
     assert_eq!(release.describe().to_string(), "a86d127c4b2f");
 }
+
+#[test]
+fn test_basic_ios_ver() {
+    let release = Release::parse("org.example.FooApp@1.0rc1+20200101100");
+    assert_eq!(release.package(), Some("org.example.FooApp"));
+    assert_eq!(release.version_raw(), "1.0rc1+20200101100");
+
+    let version = release.version().unwrap();
+    assert_eq!(version.major(), 1);
+    assert_eq!(version.minor(), 0);
+    assert_eq!(version.patch(), 0);
+    assert_eq!(version.triple(), (1, 0, 0));
+    assert_eq!(version.pre(), Some("rc1"));
+    assert_eq!(version.build_code(), Some("20200101100"));
+    assert_eq!(version.normalized_build_code(), "02020010110000000000000000000000");
+
+    assert_eq!(release.build_hash(), None);
+    assert_eq!(release.to_string(), "org.example.FooApp@1.0.0-rc1+20200101100");
+
+    assert_eq!(release.describe().to_string(), "1.0.0-rc1 (20200101100)");
+}
+
+#[test]
+fn test_basic_ios_ver2() {
+    let release = Release::parse("org.example.FooApp@1.0rc1+1.2.3");
+    assert_eq!(release.package(), Some("org.example.FooApp"));
+    assert_eq!(release.version_raw(), "1.0rc1+1.2.3");
+
+    let version = release.version().unwrap();
+    assert_eq!(version.major(), 1);
+    assert_eq!(version.minor(), 0);
+    assert_eq!(version.patch(), 0);
+    assert_eq!(version.triple(), (1, 0, 0));
+    assert_eq!(version.pre(), Some("rc1"));
+    assert_eq!(version.build_code(), Some("1.2.3"));
+    assert_eq!(version.normalized_build_code(), "00000000000100000000020000000003");
+
+    assert_eq!(release.build_hash(), None);
+    assert_eq!(release.to_string(), "org.example.FooApp@1.0.0-rc1+1.2.3");
+
+    assert_eq!(release.describe().to_string(), "1.0.0-rc1 (1.2.3)");
+}
