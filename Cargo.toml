@@ -1,10 +1,11 @@
 [package]
 name = "sentry-release-parser"
 version = "0.1.0"
-authors = ["Armin Ronacher <armin.ronacher@active-4.com>"]
+authors = ["Sentry <hello@sentry.io>"]
 edition = "2018"
 license = "Apache-2.0"
 readme = "README.md"
+repository = "https://github.com/getsentry/sentry-release-parser"
 
 [package.metadata.docs.rs]
 all-features = true
