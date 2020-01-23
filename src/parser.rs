@@ -30,9 +30,11 @@ lazy_static! {
     )
     .unwrap();
     static ref HEX_REGEX: Regex = Regex::new(r#"^[a-fA-F0-9]+$"#).unwrap();
+    static ref VALID_RELEASE_REGEX: Regex = Regex::new(r"^[^/\r\n]*\z").unwrap();
 }
 
-#[derive(Debug, Clone)]
+/// An error indicating invalid versions.
+#[derive(Debug, Clone, PartialEq)]
 pub struct InvalidVersion;
 
 impl std::error::Error for InvalidVersion {}
@@ -43,6 +45,34 @@ impl fmt::Display for InvalidVersion {
     }
 }
 
+/// An error indicating invalid releases.
+#[derive(Debug, Clone, PartialEq)]
+pub enum InvalidRelease {
+    /// The release name was too long
+    TooLong,
+    /// Release name is restricted
+    RestrictedName,
+    /// The release contained invalid characters
+    BadCharacters,
+}
+
+impl std::error::Error for InvalidRelease {}
+
+impl fmt::Display for InvalidRelease {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "invalid release: {}",
+            match *self {
+                InvalidRelease::BadCharacters => "bad characters in release name",
+                InvalidRelease::RestrictedName => "restricted release name",
+                InvalidRelease::TooLong => "release name too long",
+            }
+        )
+    }
+}
+
+/// Represents a parsed version.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Version<'a> {
     raw: &'a str,
@@ -170,46 +200,59 @@ impl<'a> fmt::Display for Version<'a> {
     }
 }
 
+/// The type of release format
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum ReleaseType {
+pub enum FormatType {
+    /// An unqualified release.
     Unqualified,
+    /// A package qualified release.
     Qualified,
+    /// A package qualified and versioned release.
     Versioned,
 }
 
+/// Represents a parsed release.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Release<'a> {
     raw: &'a str,
     package: &'a str,
     version_raw: &'a str,
     version: Option<Version<'a>>,
-    ty: ReleaseType,
+    ty: FormatType,
 }
 
 impl<'a> Release<'a> {
     /// Parses a release from a string.
-    pub fn parse(release: &'a str) -> Release<'a> {
+    pub fn parse(release: &'a str) -> Result<Release<'a>, InvalidRelease> {
+        let release = release.trim();
+        if release.len() > 250 {
+            return Err(InvalidRelease::TooLong);
+        } else if release == "." || release == ".." || release == "latest" {
+            return Err(InvalidRelease::RestrictedName);
+        } else if !VALID_RELEASE_REGEX.is_match(release) {
+            return Err(InvalidRelease::BadCharacters);
+        }
         if let Some(caps) = RELEASE_REGEX.captures(release) {
             let (version, ty) = if let Ok(version) = Version::parse(caps.get(2).unwrap().as_str()) {
-                (Some(version), ReleaseType::Versioned)
+                (Some(version), FormatType::Versioned)
             } else {
-                (None, ReleaseType::Qualified)
+                (None, FormatType::Qualified)
             };
-            Release {
+            Ok(Release {
                 raw: release,
                 package: caps.get(1).unwrap().as_str(),
                 version_raw: caps.get(2).unwrap().as_str(),
                 version,
                 ty,
-            }
+            })
         } else {
-            Release {
+            Ok(Release {
                 raw: release,
                 package: "",
                 version_raw: release,
                 version: None,
-                ty: ReleaseType::Unqualified,
-            }
+                ty: FormatType::Unqualified,
+            })
         }
     }
 
@@ -229,6 +272,10 @@ impl<'a> Release<'a> {
         }
     }
 
+    /// The raw version part of the release.
+    ///
+    /// This is set even if the version part is not a valid version
+    /// (for instance because it's a hash).
     pub fn version_raw(&self) -> &str {
         self.version_raw
     }
@@ -253,27 +300,45 @@ impl<'a> Release<'a> {
             })
     }
 
-    /// Returns a short description
+    /// Returns a short description.
+    ///
+    /// This returns a human readable format that includes an abbreviated
+    /// name of the release.  Typically it will remove the package and it
+    /// will try to abbreviate build hashes etc.
     pub fn describe(&self) -> ReleaseDescription<'_> {
         ReleaseDescription(self)
     }
+
+    /// Returns the detected format type.
+    pub fn format_type(&self) -> FormatType {
+        self.ty
+    }
 }
 
+/// Helper object to format a release into a description.
 #[derive(Debug)]
 pub struct ReleaseDescription<'a>(&'a Release<'a>);
 
 impl<'a> fmt::Display for ReleaseDescription<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let short_hash = if let Some(hash) = self.0.build_hash() {
+            Some(hash.get(..12).unwrap_or(hash))
+        } else {
+            None
+        };
+
         if let Some(ver) = self.0.version() {
             write!(f, "{}.{}.{}", ver.major(), ver.minor(), ver.patch())?;
             if let Some(pre) = ver.pre() {
                 write!(f, "-{}", pre)?;
             }
-            if let Some(build_code) = ver.build_code() {
+            if let Some(short_hash) = short_hash {
+                write!(f, " ({})", short_hash)?;
+            } else if let Some(build_code) = ver.build_code() {
                 write!(f, " ({})", build_code)?;
             }
-        } else if let Some(hash) = self.0.build_hash() {
-            write!(f, "{}", hash.get(..12).unwrap_or(hash))?;
+        } else if let Some(short_hash) = short_hash {
+            write!(f, "{}", short_hash)?;
         } else {
             write!(f, "{}", self.0)?;
         }
