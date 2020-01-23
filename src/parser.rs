@@ -122,10 +122,10 @@ impl<'a> Version<'a> {
         fn split(s: &str) -> Vec<semver::Identifier> {
             s.split('.')
                 .map(|item| {
-                    if let Some(val) = item.parse::<u64>() {
+                    if let Ok(val) = item.parse::<u64>() {
                         semver::Identifier::Numeric(val)
                     } else {
-                        semver::Identifier::AlphaNumeric(val.into())
+                        semver::Identifier::AlphaNumeric(item.into())
                     }
                 })
                 .collect()

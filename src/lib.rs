@@ -1,6 +1,8 @@
 //! This package implements a release name parser that is used by Sentry.
 //!
 //! ```
+//! use sentry_release_parser::Release;
+//!
 //! let release = Release::parse("org.example.FooApp@1.0rc1+20200101100").unwrap();
 //! assert_eq!(release.package(), Some("org.example.FooApp"));
 //! assert_eq!(release.version_raw(), "1.0rc1+20200101100");
