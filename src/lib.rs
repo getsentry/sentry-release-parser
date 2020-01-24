@@ -20,6 +20,7 @@
 //!
 //! - `semver`: if enabled the version object provides a method to convert it
 //!   into a semver if it's compatible.
+//! - `serde`: turns on serde serialization.
 mod parser;
 
 pub use self::parser::*;
