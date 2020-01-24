@@ -80,6 +80,7 @@ impl fmt::Display for InvalidRelease {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct Version<'a> {
+    #[cfg_attr(feature = "serde", serde(skip))]
     raw: &'a str,
     major: u64,
     minor: u64,
@@ -247,12 +248,13 @@ pub enum FormatType {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct Release<'a> {
+    #[cfg_attr(feature = "serde", serde(skip))]
     raw: &'a str,
     package: &'a str,
     version_raw: &'a str,
+    #[cfg_attr(feature = "serde", serde(rename = "version_parsed"))]
     version: Option<Version<'a>>,
-    #[cfg_attr(feature = "serde", serde(rename = "format_type"))]
-    ty: FormatType,
+    format: FormatType,
 }
 
 impl<'a> Release<'a> {
@@ -267,17 +269,18 @@ impl<'a> Release<'a> {
             return Err(InvalidRelease::BadCharacters);
         }
         if let Some(caps) = RELEASE_REGEX.captures(release) {
-            let (version, ty) = if let Ok(version) = Version::parse(caps.get(2).unwrap().as_str()) {
-                (Some(version), FormatType::Versioned)
-            } else {
-                (None, FormatType::Qualified)
-            };
+            let (version, format) =
+                if let Ok(version) = Version::parse(caps.get(2).unwrap().as_str()) {
+                    (Some(version), FormatType::Versioned)
+                } else {
+                    (None, FormatType::Qualified)
+                };
             Ok(Release {
                 raw: release,
                 package: caps.get(1).unwrap().as_str(),
                 version_raw: caps.get(2).unwrap().as_str(),
                 version,
-                ty,
+                format,
             })
         } else {
             Ok(Release {
@@ -285,7 +288,7 @@ impl<'a> Release<'a> {
                 package: "",
                 version_raw: release,
                 version: None,
-                ty: FormatType::Unqualified,
+                format: FormatType::Unqualified,
             })
         }
     }
@@ -344,8 +347,8 @@ impl<'a> Release<'a> {
     }
 
     /// Returns the detected format type.
-    pub fn format_type(&self) -> FormatType {
-        self.ty
+    pub fn format(&self) -> FormatType {
+        self.format
     }
 }
 
