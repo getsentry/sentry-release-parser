@@ -25,9 +25,9 @@ fn test_basic() {
 
 #[test]
 fn test_basic_short_ver() {
-    let release = Release::parse("@foo.bar.baz--blah@1a+build-code").unwrap();
+    let release = Release::parse("@foo.bar.baz--blah@1.0a+build-code").unwrap();
     assert_eq!(release.package(), Some("@foo.bar.baz--blah"));
-    assert_eq!(release.version_raw(), "1a+build-code");
+    assert_eq!(release.version_raw(), "1.0a+build-code");
 
     let version = release.version().unwrap();
     assert_eq!(version.major(), 1);
@@ -83,11 +83,11 @@ fn test_release_is_hash() {
 #[test]
 fn test_release_build_note_is_hash() {
     let release =
-        Release::parse("@foo.bar.baz--blah@1a+a86d127c4b2f23a0a862620280427dcc01c78676").unwrap();
+        Release::parse("@foo.bar.baz--blah@1.0a+a86d127c4b2f23a0a862620280427dcc01c78676").unwrap();
     assert_eq!(release.package(), Some("@foo.bar.baz--blah"));
     assert_eq!(
         release.version_raw(),
-        "1a+a86d127c4b2f23a0a862620280427dcc01c78676"
+        "1.0a+a86d127c4b2f23a0a862620280427dcc01c78676"
     );
 
     let version = release.version().unwrap();
@@ -113,10 +113,22 @@ fn test_release_build_note_is_hash() {
 }
 
 #[test]
+fn test_four_component_version() {
+    let release = Release::parse("foo.bar.baz@1.2.3.4").unwrap();
+    assert_eq!(release.package(), Some("foo.bar.baz"));
+    assert_eq!(release.version_raw(), "1.2.3.4");
+    assert_eq!(release.version(), None);
+    assert_eq!(release.to_string(), "foo.bar.baz@1.2.3.4");
+}
+
+#[test]
 fn test_release_build_note_is_num_starting_hash() {
     let release = Release::parse("package@085240e737828d8326719bf97730188e927e49ca").unwrap();
     assert_eq!(release.package(), Some("package"));
-    assert_eq!(release.version_raw(), "085240e737828d8326719bf97730188e927e49ca");
+    assert_eq!(
+        release.version_raw(),
+        "085240e737828d8326719bf97730188e927e49ca"
+    );
     assert_eq!(release.version(), None);
     assert_eq!(
         release.build_hash(),

@@ -15,9 +15,9 @@ lazy_static! {
         r#"(?x)
         ^
             (?P<major>0|[1-9][0-9]*)
-            (?:\.(?P<minor>0|[1-9][0-9]*))?
+            (?:\.(?P<minor>0|[1-9][0-9]*))
             (?:\.(?P<patch>0|[1-9][0-9]*))?
-            (?:(?P<prerelease_marker>-)?
+            (?:-?
                 (?P<prerelease>(?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)
                 (?:\.(?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?
             (?:\+(?P<build_code>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?
@@ -123,18 +123,6 @@ impl<'a> Version<'a> {
             return Err(InvalidVersion);
         };
 
-        // Because we support MAJOR followed by PRE_RELEASE without a separator
-        // we can accidentally parse 52aaabbb into a version number that is only
-        // a pre-release.  In cases where we do not have a pre-marker we expect
-        // that at least one dot is present or a build code.
-        if !caps.get(4).is_some()
-            && !caps.get(6).is_some()
-            && caps.get(2).is_none()
-            && caps.get(5).is_some()
-        {
-            return Err(InvalidVersion);
-        }
-
         Ok(Version {
             raw: version,
             major: caps[1].parse().unwrap(),
@@ -146,8 +134,8 @@ impl<'a> Version<'a> {
                 .get(3)
                 .and_then(|x| x.as_str().parse().ok())
                 .unwrap_or(0),
-            pre: caps.get(5).map(|x| x.as_str()).unwrap_or(""),
-            build_code: caps.get(6).map(|x| x.as_str()).unwrap_or(""),
+            pre: caps.get(4).map(|x| x.as_str()).unwrap_or(""),
+            build_code: caps.get(5).map(|x| x.as_str()).unwrap_or(""),
         })
     }
 
