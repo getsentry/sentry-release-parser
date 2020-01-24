@@ -113,6 +113,18 @@ fn test_release_build_note_is_hash() {
 }
 
 #[test]
+fn test_release_build_note_is_num_starting_hash() {
+    let release = Release::parse("package@085240e737828d8326719bf97730188e927e49ca").unwrap();
+    assert_eq!(release.package(), Some("package"));
+    assert_eq!(release.version_raw(), "085240e737828d8326719bf97730188e927e49ca");
+    assert_eq!(release.version(), None);
+    assert_eq!(
+        release.build_hash(),
+        Some("085240e737828d8326719bf97730188e927e49ca")
+    );
+}
+
+#[test]
 fn test_basic_ios_ver() {
     let release = Release::parse("org.example.FooApp@1.0rc1+20200101100").unwrap();
     assert_eq!(release.package(), Some("org.example.FooApp"));

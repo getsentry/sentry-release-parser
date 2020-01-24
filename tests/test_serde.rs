@@ -14,6 +14,9 @@ fn test_basic() {
       patch: 3
       pre: dev
       build_code: BUILD-code
+      normalized_build_code: build-code
+    build_hash: ~
+    description: 1.2.3-dev (BUILD-code)
     format: versioned
     "###);
 }
@@ -26,6 +29,8 @@ fn test_hash() {
     package: ~
     version_raw: 085240e737828d8326719bf97730188e927e49ca
     version_parsed: ~
+    build_hash: 085240e737828d8326719bf97730188e927e49ca
+    description: "085240e73782"
     format: unqualified
     "###);
 }
@@ -37,12 +42,9 @@ fn test_qualified_hash() {
     ---
     package: package
     version_raw: 085240e737828d8326719bf97730188e927e49ca
-    version_parsed:
-      major: 0
-      minor: 0
-      patch: 0
-      pre: 85240e737828d8326719bf97730188e927e49ca
-      build_code: ~
-    format: versioned
+    version_parsed: ~
+    build_hash: 085240e737828d8326719bf97730188e927e49ca
+    description: "085240e73782"
+    format: qualified
     "###);
 }

@@ -4,7 +4,10 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 #[cfg(feature = "serde")]
-use serde::Serialize;
+use serde::{
+    ser::{SerializeStruct, Serializer},
+    Serialize,
+};
 
 lazy_static! {
     static ref RELEASE_REGEX: Regex = Regex::new(r#"^(@?[^@]+)@(.*?)$"#).unwrap();
@@ -14,7 +17,7 @@ lazy_static! {
             (?P<major>0|[1-9][0-9]*)
             (?:\.(?P<minor>0|[1-9][0-9]*))?
             (?:\.(?P<patch>0|[1-9][0-9]*))?
-            (?:-?
+            (?:(?P<prerelease_marker>-)?
                 (?P<prerelease>(?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)
                 (?:\.(?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?
             (?:\+(?P<build_code>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?
@@ -34,14 +37,6 @@ lazy_static! {
     .unwrap();
     static ref HEX_REGEX: Regex = Regex::new(r#"^[a-fA-F0-9]+$"#).unwrap();
     static ref VALID_RELEASE_REGEX: Regex = Regex::new(r"^[^/\r\n]*\z").unwrap();
-}
-
-fn none_if_empty(s: &str) -> Option<&str> {
-    if s.is_empty() {
-        None
-    } else {
-        Some(s)
-    }
 }
 
 /// An error indicating invalid versions.
@@ -86,15 +81,30 @@ impl fmt::Display for InvalidRelease {
 
 /// Represents a parsed version.
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct Version<'a> {
-    #[cfg_attr(feature = "serde", serde(skip))]
     raw: &'a str,
     major: u64,
     minor: u64,
     patch: u64,
-    pre: Option<&'a str>,
-    build_code: Option<&'a str>,
+    pre: &'a str,
+    build_code: &'a str,
+}
+
+#[cfg(feature = "serde")]
+impl<'a> Serialize for Version<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Version", 6)?;
+        state.serialize_field("major", &self.major())?;
+        state.serialize_field("minor", &self.minor())?;
+        state.serialize_field("patch", &self.patch())?;
+        state.serialize_field("pre", &self.pre())?;
+        state.serialize_field("build_code", &self.build_code())?;
+        state.serialize_field("normalized_build_code", &self.normalized_build_code())?;
+        state.end()
+    }
 }
 
 fn is_build_hash(s: &str) -> bool {
@@ -112,6 +122,19 @@ impl<'a> Version<'a> {
         } else {
             return Err(InvalidVersion);
         };
+
+        // Because we support MAJOR followed by PRE_RELEASE without a separator
+        // we can accidentally parse 52aaabbb into a version number that is only
+        // a pre-release.  In cases where we do not have a pre-marker we expect
+        // that at least one dot is present or a build code.
+        if !caps.get(4).is_some()
+            && !caps.get(6).is_some()
+            && caps.get(2).is_none()
+            && caps.get(5).is_some()
+        {
+            return Err(InvalidVersion);
+        }
+
         Ok(Version {
             raw: version,
             major: caps[1].parse().unwrap(),
@@ -123,8 +146,8 @@ impl<'a> Version<'a> {
                 .get(3)
                 .and_then(|x| x.as_str().parse().ok())
                 .unwrap_or(0),
-            pre: none_if_empty(caps.get(4).map(|x| x.as_str()).unwrap_or("")),
-            build_code: none_if_empty(caps.get(5).map(|x| x.as_str()).unwrap_or("")),
+            pre: caps.get(5).map(|x| x.as_str()).unwrap_or(""),
+            build_code: caps.get(6).map(|x| x.as_str()).unwrap_or(""),
         })
     }
 
@@ -133,9 +156,8 @@ impl<'a> Version<'a> {
     /// Requires the `semver` feature.
     #[cfg(feature = "semver")]
     pub fn as_semver(&self) -> semver::Version {
-        fn split(s: Option<&str>) -> Vec<semver::Identifier> {
-            s.unwrap_or("")
-                .split('.')
+        fn split(s: &str) -> Vec<semver::Identifier> {
+            s.split('.')
                 .map(|item| {
                     if let Ok(val) = item.parse::<u64>() {
                         semver::Identifier::Numeric(val)
@@ -172,12 +194,20 @@ impl<'a> Version<'a> {
 
     /// If a pre-release identifier is included returns that.
     pub fn pre(&self) -> Option<&str> {
-        self.pre
+        if self.pre.is_empty() {
+            None
+        } else {
+            Some(self.pre)
+        }
     }
 
     /// If a build code is included returns that.
     pub fn build_code(&self) -> Option<&str> {
-        self.build_code
+        if self.build_code.is_empty() {
+            None
+        } else {
+            Some(self.build_code)
+        }
     }
 
     /// Returns an internally normalized build code.
@@ -186,8 +216,7 @@ impl<'a> Version<'a> {
     /// as it might be very confusing.  For instance if a build code looks like a
     /// dotted version it ends up being padded to 32 characters.
     pub fn normalized_build_code(&self) -> String {
-        let build_code = self.build_code.unwrap_or("");
-        if let Some(caps) = DOTTED_BUILD_CODE_REGEX.captures(build_code) {
+        if let Some(caps) = DOTTED_BUILD_CODE_REGEX.captures(self.build_code) {
             format!(
                 "{:012}{:010}{:010}",
                 caps[1].parse::<u64>().unwrap_or(0),
@@ -199,7 +228,7 @@ impl<'a> Version<'a> {
                     .unwrap_or(0),
             )
         } else {
-            build_code.to_ascii_lowercase()
+            self.build_code.to_ascii_lowercase()
         }
     }
 
@@ -248,15 +277,29 @@ pub enum FormatType {
 
 /// Represents a parsed release.
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct Release<'a> {
-    #[cfg_attr(feature = "serde", serde(skip))]
     raw: &'a str,
-    package: Option<&'a str>,
+    package: &'a str,
     version_raw: &'a str,
-    #[cfg_attr(feature = "serde", serde(rename = "version_parsed"))]
     version: Option<Version<'a>>,
     format: FormatType,
+}
+
+#[cfg(feature = "serde")]
+impl<'a> Serialize for Release<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Release", 6)?;
+        state.serialize_field("package", &self.package())?;
+        state.serialize_field("version_raw", &self.version_raw())?;
+        state.serialize_field("version_parsed", &self.version())?;
+        state.serialize_field("build_hash", &self.build_hash())?;
+        state.serialize_field("description", &self.describe().to_string())?;
+        state.serialize_field("format", &self.format())?;
+        state.end()
+    }
 }
 
 impl<'a> Release<'a> {
@@ -279,7 +322,7 @@ impl<'a> Release<'a> {
                 };
             Ok(Release {
                 raw: release,
-                package: none_if_empty(caps.get(1).unwrap().as_str()),
+                package: caps.get(1).unwrap().as_str(),
                 version_raw: caps.get(2).unwrap().as_str(),
                 version,
                 format,
@@ -287,7 +330,7 @@ impl<'a> Release<'a> {
         } else {
             Ok(Release {
                 raw: release,
-                package: None,
+                package: "",
                 version_raw: release,
                 version: None,
                 format: FormatType::Unqualified,
@@ -304,7 +347,11 @@ impl<'a> Release<'a> {
 
     /// Returns the contained package information.
     pub fn package(&self) -> Option<&str> {
-        self.package
+        if self.package.is_empty() {
+            None
+        } else {
+            Some(self.package)
+        }
     }
 
     /// The raw version part of the release.
