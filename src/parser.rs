@@ -3,6 +3,9 @@ use std::fmt;
 use lazy_static::lazy_static;
 use regex::Regex;
 
+#[cfg(feature = "serde")]
+use serde::Serialize;
+
 lazy_static! {
     static ref RELEASE_REGEX: Regex = Regex::new(r#"^(@?[^@]+)@(.*?)$"#).unwrap();
     static ref VERSION_REGEX: Regex = Regex::new(
@@ -35,6 +38,7 @@ lazy_static! {
 
 /// An error indicating invalid versions.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct InvalidVersion;
 
 impl std::error::Error for InvalidVersion {}
@@ -74,6 +78,7 @@ impl fmt::Display for InvalidRelease {
 
 /// Represents a parsed version.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct Version<'a> {
     raw: &'a str,
     major: u64,
@@ -228,6 +233,7 @@ impl<'a> fmt::Display for Version<'a> {
 
 /// The type of release format
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(rename_all = "snake_case"))]
 pub enum FormatType {
     /// An unqualified release.
     Unqualified,
@@ -239,11 +245,13 @@ pub enum FormatType {
 
 /// Represents a parsed release.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct Release<'a> {
     raw: &'a str,
     package: &'a str,
     version_raw: &'a str,
     version: Option<Version<'a>>,
+    #[cfg_attr(feature = "serde", serde(rename = "format_type"))]
     ty: FormatType,
 }
 
