@@ -36,6 +36,14 @@ lazy_static! {
     static ref VALID_RELEASE_REGEX: Regex = Regex::new(r"^[^/\r\n]*\z").unwrap();
 }
 
+fn none_if_empty(s: &str) -> Option<&str> {
+    if s.is_empty() {
+        None
+    } else {
+        Some(s)
+    }
+}
+
 /// An error indicating invalid versions.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
@@ -85,8 +93,8 @@ pub struct Version<'a> {
     major: u64,
     minor: u64,
     patch: u64,
-    pre: &'a str,
-    build_code: &'a str,
+    pre: Option<&'a str>,
+    build_code: Option<&'a str>,
 }
 
 fn is_build_hash(s: &str) -> bool {
@@ -115,8 +123,8 @@ impl<'a> Version<'a> {
                 .get(3)
                 .and_then(|x| x.as_str().parse().ok())
                 .unwrap_or(0),
-            pre: caps.get(4).map(|x| x.as_str()).unwrap_or(""),
-            build_code: caps.get(5).map(|x| x.as_str()).unwrap_or(""),
+            pre: none_if_empty(caps.get(4).map(|x| x.as_str()).unwrap_or("")),
+            build_code: none_if_empty(caps.get(5).map(|x| x.as_str()).unwrap_or("")),
         })
     }
 
@@ -125,8 +133,9 @@ impl<'a> Version<'a> {
     /// Requires the `semver` feature.
     #[cfg(feature = "semver")]
     pub fn as_semver(&self) -> semver::Version {
-        fn split(s: &str) -> Vec<semver::Identifier> {
-            s.split('.')
+        fn split(s: Option<&str>) -> Vec<semver::Identifier> {
+            s.unwrap_or("")
+                .split('.')
                 .map(|item| {
                     if let Ok(val) = item.parse::<u64>() {
                         semver::Identifier::Numeric(val)
@@ -163,20 +172,12 @@ impl<'a> Version<'a> {
 
     /// If a pre-release identifier is included returns that.
     pub fn pre(&self) -> Option<&str> {
-        if self.pre.is_empty() {
-            None
-        } else {
-            Some(self.pre)
-        }
+        self.pre
     }
 
     /// If a build code is included returns that.
     pub fn build_code(&self) -> Option<&str> {
-        if self.build_code.is_empty() {
-            None
-        } else {
-            Some(self.build_code)
-        }
+        self.build_code
     }
 
     /// Returns an internally normalized build code.
@@ -185,7 +186,8 @@ impl<'a> Version<'a> {
     /// as it might be very confusing.  For instance if a build code looks like a
     /// dotted version it ends up being padded to 32 characters.
     pub fn normalized_build_code(&self) -> String {
-        if let Some(caps) = DOTTED_BUILD_CODE_REGEX.captures(self.build_code) {
+        let build_code = self.build_code.unwrap_or("");
+        if let Some(caps) = DOTTED_BUILD_CODE_REGEX.captures(build_code) {
             format!(
                 "{:012}{:010}{:010}",
                 caps[1].parse::<u64>().unwrap_or(0),
@@ -197,7 +199,7 @@ impl<'a> Version<'a> {
                     .unwrap_or(0),
             )
         } else {
-            self.build_code.to_ascii_lowercase()
+            build_code.to_ascii_lowercase()
         }
     }
 
@@ -250,7 +252,7 @@ pub enum FormatType {
 pub struct Release<'a> {
     #[cfg_attr(feature = "serde", serde(skip))]
     raw: &'a str,
-    package: &'a str,
+    package: Option<&'a str>,
     version_raw: &'a str,
     #[cfg_attr(feature = "serde", serde(rename = "version_parsed"))]
     version: Option<Version<'a>>,
@@ -277,7 +279,7 @@ impl<'a> Release<'a> {
                 };
             Ok(Release {
                 raw: release,
-                package: caps.get(1).unwrap().as_str(),
+                package: none_if_empty(caps.get(1).unwrap().as_str()),
                 version_raw: caps.get(2).unwrap().as_str(),
                 version,
                 format,
@@ -285,7 +287,7 @@ impl<'a> Release<'a> {
         } else {
             Ok(Release {
                 raw: release,
-                package: "",
+                package: None,
                 version_raw: release,
                 version: None,
                 format: FormatType::Unqualified,
@@ -302,11 +304,7 @@ impl<'a> Release<'a> {
 
     /// Returns the contained package information.
     pub fn package(&self) -> Option<&str> {
-        if self.package.is_empty() {
-            None
-        } else {
-            Some(self.package)
-        }
+        self.package
     }
 
     /// The raw version part of the release.

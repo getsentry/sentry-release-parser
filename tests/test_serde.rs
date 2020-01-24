@@ -17,3 +17,32 @@ fn test_basic() {
     format: versioned
     "###);
 }
+
+#[test]
+fn test_hash() {
+    let release = Release::parse("085240e737828d8326719bf97730188e927e49ca").unwrap();
+    insta::assert_yaml_snapshot!(&release, @r###"
+    ---
+    package: ~
+    version_raw: 085240e737828d8326719bf97730188e927e49ca
+    version_parsed: ~
+    format: unqualified
+    "###);
+}
+
+#[test]
+fn test_qualified_hash() {
+    let release = Release::parse("package@085240e737828d8326719bf97730188e927e49ca").unwrap();
+    insta::assert_yaml_snapshot!(&release, @r###"
+    ---
+    package: package
+    version_raw: 085240e737828d8326719bf97730188e927e49ca
+    version_parsed:
+      major: 0
+      minor: 0
+      patch: 0
+      pre: 85240e737828d8326719bf97730188e927e49ca
+      build_code: ~
+    format: versioned
+    "###);
+}
