@@ -260,7 +260,7 @@ pub enum FormatType {
     /// A package qualified release.
     Qualified,
     /// A package qualified and versioned release.
-    Versioned,
+    QualifiedVersioned,
 }
 
 /// Represents a parsed release.
@@ -304,7 +304,7 @@ impl<'a> Release<'a> {
         if let Some(caps) = RELEASE_REGEX.captures(release) {
             let (version, format) =
                 if let Ok(version) = Version::parse(caps.get(2).unwrap().as_str()) {
-                    (Some(version), FormatType::Versioned)
+                    (Some(version), FormatType::QualifiedVersioned)
                 } else {
                     (None, FormatType::Qualified)
                 };

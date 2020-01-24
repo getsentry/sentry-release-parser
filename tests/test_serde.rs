@@ -17,7 +17,7 @@ fn test_basic() {
       normalized_build_code: build-code
     build_hash: ~
     description: 1.2.3-dev (BUILD-code)
-    format: versioned
+    format: qualified_versioned
     "###);
 }
 
@@ -37,7 +37,7 @@ fn test_mobile() {
       normalized_build_code: "02020010110000000000000000000000"
     build_hash: ~
     description: 1.0.0 (20200101100)
-    format: versioned
+    format: qualified_versioned
     "###);
 }
 
@@ -57,7 +57,7 @@ fn test_mobile_dotted_secondary() {
       normalized_build_code: "00000000000100000000000000000200"
     build_hash: ~
     description: 1.0.0 (1.0.200)
-    format: versioned
+    format: qualified_versioned
     "###);
 }
 
