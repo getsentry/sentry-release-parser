@@ -125,7 +125,7 @@ impl<'a> Version<'a> {
 
         Ok(Version {
             raw: version,
-            major: caps[1].parse().unwrap(),
+            major: caps[1].parse().unwrap_or(0),
             minor: caps
                 .get(2)
                 .and_then(|x| x.as_str().parse().ok())
