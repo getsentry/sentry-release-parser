@@ -42,4 +42,6 @@ checkall:
 testall:
 	cargo test --all-features --all
 	cargo test --no-default-features --all
+	yarn
+	yarn test
 .PHONY: testall
