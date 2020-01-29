@@ -1,9 +1,11 @@
 language: node_js
-node_js: '10'
+node_js: "10"
+os: linux
 
 install: yarn
 
 before_install:
   - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain ${RUST_TOOLCHAIN:-stable}
+  - export PATH=~/.cargo/bin/:$PATH
 
 script: make
