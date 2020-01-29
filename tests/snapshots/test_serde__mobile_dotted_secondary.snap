@@ -1,0 +1,17 @@
+---
+source: tests/test_serde.rs
+expression: "&release(\"foo.bar.baz.App@1.0+1.0.200\")"
+---
+{
+  "package": "foo.bar.baz.App",
+  "version_raw": "1.0+1.0.200",
+  "version_parsed": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0,
+    "pre": null,
+    "build_code": "1.0.200"
+  },
+  "build_hash": null,
+  "description": "1.0.0 (1.0.200)"
+}

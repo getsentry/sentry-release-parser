@@ -1,0 +1,11 @@
+---
+source: tests/test_serde.rs
+expression: "&release(\"085240e737828d8326719bf97730188e927e49ca\")"
+---
+{
+  "package": null,
+  "version_raw": "085240e737828d8326719bf97730188e927e49ca",
+  "version_parsed": null,
+  "build_hash": "085240e737828d8326719bf97730188e927e49ca",
+  "description": "085240e73782"
+}

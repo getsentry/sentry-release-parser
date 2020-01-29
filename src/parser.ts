@@ -51,11 +51,11 @@ export class Release {
       this.raw = release;
       this.package = releaseMatch[1];
       this.versionRaw = releaseMatch[2];
-      this.versionParsed = parseVersion(this.versionRaw);
+      this.versionParsed = parseVersion(this.versionRaw) || undefined;
     } else {
       this.raw = release;
       this.versionRaw = release;
-      this.versionParsed = null;
+      this.versionParsed = undefined;
     }
   }
 
@@ -123,7 +123,7 @@ function parseVersion(version: string): Version | null {
     major: parseInt(match[1], 10),
     minor: parseInt(match[2] || "0", 10),
     patch: parseInt(match[3] || "0", 10),
-    pre: match[4] || null,
-    buildCode: match[5] || null
+    pre: match[4] || undefined,
+    buildCode: match[5] || undefined
   };
 }
