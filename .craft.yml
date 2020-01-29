@@ -5,7 +5,7 @@ github:
 changelogPolicy: none
 statusProvider: 
     name: github
-preReleaseCommand: ""
+preReleaseCommand: ./scripts/bump-version.sh
 targets:
     - name: github
     - name: crates
