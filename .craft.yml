@@ -8,4 +8,5 @@ statusProvider:
 preReleaseCommand: ""
 targets:
     - name: github
+    - name: crates
     - name: npm
