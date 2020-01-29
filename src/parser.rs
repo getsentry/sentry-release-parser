@@ -25,16 +25,6 @@ lazy_static! {
     "#
     )
     .unwrap();
-    static ref DOTTED_BUILD_CODE_REGEX: Regex = Regex::new(
-        r#"(?x)
-        ^
-            (?P<major>0|[1-9][0-9]*)
-            (?:\.(?P<minor>0|[1-9][0-9]*))?
-            (?:\.(?P<patch>0|[1-9][0-9]*))?
-        $
-    "#
-    )
-    .unwrap();
     static ref HEX_REGEX: Regex = Regex::new(r#"^[a-fA-F0-9]+$"#).unwrap();
     static ref VALID_RELEASE_REGEX: Regex = Regex::new(r"^[^/\r\n]*\z").unwrap();
 }
@@ -96,13 +86,12 @@ impl<'a> Serialize for Version<'a> {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("Version", 6)?;
+        let mut state = serializer.serialize_struct("Version", 5)?;
         state.serialize_field("major", &self.major())?;
         state.serialize_field("minor", &self.minor())?;
         state.serialize_field("patch", &self.patch())?;
         state.serialize_field("pre", &self.pre())?;
         state.serialize_field("build_code", &self.build_code())?;
-        state.serialize_field("normalized_build_code", &self.normalized_build_code())?;
         state.end()
     }
 }
@@ -198,28 +187,6 @@ impl<'a> Version<'a> {
         }
     }
 
-    /// Returns an internally normalized build code.
-    ///
-    /// This value is useful for ordering but it should never be shown to a user
-    /// as it might be very confusing.  For instance if a build code looks like a
-    /// dotted version it ends up being padded to 32 characters.
-    pub fn normalized_build_code(&self) -> String {
-        if let Some(caps) = DOTTED_BUILD_CODE_REGEX.captures(self.build_code) {
-            format!(
-                "{:012}{:010}{:010}",
-                caps[1].parse::<u64>().unwrap_or(0),
-                caps.get(2)
-                    .and_then(|x| x.as_str().parse::<u64>().ok())
-                    .unwrap_or(0),
-                caps.get(3)
-                    .and_then(|x| x.as_str().parse::<u64>().ok())
-                    .unwrap_or(0),
-            )
-        } else {
-            self.build_code.to_ascii_lowercase()
-        }
-    }
-
     /// Returns the raw version as string.
     ///
     /// It's generally better to use `to_string` which normalizes.
@@ -251,18 +218,6 @@ impl<'a> fmt::Display for Version<'a> {
     }
 }
 
-/// The type of release format
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize), serde(rename_all = "snake_case"))]
-pub enum FormatType {
-    /// An unqualified release.
-    Unqualified,
-    /// A package qualified release.
-    Qualified,
-    /// A package qualified and versioned release.
-    QualifiedVersioned,
-}
-
 /// Represents a parsed release.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Release<'a> {
@@ -270,7 +225,6 @@ pub struct Release<'a> {
     package: &'a str,
     version_raw: &'a str,
     version: Option<Version<'a>>,
-    format: FormatType,
 }
 
 #[cfg(feature = "serde")]
@@ -285,7 +239,6 @@ impl<'a> Serialize for Release<'a> {
         state.serialize_field("version_parsed", &self.version())?;
         state.serialize_field("build_hash", &self.build_hash())?;
         state.serialize_field("description", &self.describe().to_string())?;
-        state.serialize_field("format", &self.format())?;
         state.end()
     }
 }
@@ -302,18 +255,12 @@ impl<'a> Release<'a> {
             return Err(InvalidRelease::BadCharacters);
         }
         if let Some(caps) = RELEASE_REGEX.captures(release) {
-            let (version, format) =
-                if let Ok(version) = Version::parse(caps.get(2).unwrap().as_str()) {
-                    (Some(version), FormatType::QualifiedVersioned)
-                } else {
-                    (None, FormatType::Qualified)
-                };
+            let version = Version::parse(caps.get(2).unwrap().as_str()).ok();
             Ok(Release {
                 raw: release,
                 package: caps.get(1).unwrap().as_str(),
                 version_raw: caps.get(2).unwrap().as_str(),
                 version,
-                format,
             })
         } else {
             Ok(Release {
@@ -321,7 +268,6 @@ impl<'a> Release<'a> {
                 package: "",
                 version_raw: release,
                 version: None,
-                format: FormatType::Unqualified,
             })
         }
     }
@@ -377,11 +323,6 @@ impl<'a> Release<'a> {
     /// will try to abbreviate build hashes etc.
     pub fn describe(&self) -> ReleaseDescription<'_> {
         ReleaseDescription(self)
-    }
-
-    /// Returns the detected format type.
-    pub fn format(&self) -> FormatType {
-        self.format
     }
 }
 

@@ -13,7 +13,6 @@ fn test_basic() {
     assert_eq!(version.triple(), (1, 2, 3));
     assert_eq!(version.pre(), Some("dev"));
     assert_eq!(version.build_code(), Some("BUILD-code"));
-    assert_eq!(version.normalized_build_code(), "build-code");
 
     assert_eq!(release.build_hash(), None);
     assert_eq!(
@@ -149,10 +148,6 @@ fn test_basic_ios_ver() {
     assert_eq!(version.triple(), (1, 0, 0));
     assert_eq!(version.pre(), Some("rc1"));
     assert_eq!(version.build_code(), Some("20200101100"));
-    assert_eq!(
-        version.normalized_build_code(),
-        "02020010110000000000000000000000"
-    );
 
     assert_eq!(release.build_hash(), None);
     assert_eq!(
@@ -176,10 +171,6 @@ fn test_basic_ios_ver2() {
     assert_eq!(version.triple(), (1, 0, 0));
     assert_eq!(version.pre(), Some("rc1"));
     assert_eq!(version.build_code(), Some("1.2.3"));
-    assert_eq!(
-        version.normalized_build_code(),
-        "00000000000100000000020000000003"
-    );
 
     assert_eq!(release.build_hash(), None);
     assert_eq!(release.to_string(), "org.example.FooApp@1.0.0-rc1+1.2.3");

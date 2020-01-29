@@ -14,10 +14,8 @@ fn test_basic() {
       patch: 3
       pre: dev
       build_code: BUILD-code
-      normalized_build_code: build-code
     build_hash: ~
     description: 1.2.3-dev (BUILD-code)
-    format: qualified_versioned
     "###);
 }
 
@@ -34,10 +32,8 @@ fn test_mobile() {
       patch: 0
       pre: ~
       build_code: "20200101100"
-      normalized_build_code: "02020010110000000000000000000000"
     build_hash: ~
     description: 1.0.0 (20200101100)
-    format: qualified_versioned
     "###);
 }
 
@@ -54,10 +50,8 @@ fn test_mobile_dotted_secondary() {
       patch: 0
       pre: ~
       build_code: 1.0.200
-      normalized_build_code: "00000000000100000000000000000200"
     build_hash: ~
     description: 1.0.0 (1.0.200)
-    format: qualified_versioned
     "###);
 }
 
@@ -71,7 +65,6 @@ fn test_hash() {
     version_parsed: ~
     build_hash: 085240e737828d8326719bf97730188e927e49ca
     description: "085240e73782"
-    format: unqualified
     "###);
 }
 
@@ -85,6 +78,5 @@ fn test_qualified_hash() {
     version_parsed: ~
     build_hash: 085240e737828d8326719bf97730188e927e49ca
     description: "085240e73782"
-    format: qualified
     "###);
 }
