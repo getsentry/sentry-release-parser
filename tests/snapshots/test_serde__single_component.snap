@@ -1,0 +1,18 @@
+---
+source: tests/test_serde.rs
+expression: "&release(\"com.foogame.FooGame@7211+7211\")"
+---
+{
+  "package": "com.foogame.FooGame",
+  "version_raw": "7211+7211",
+  "version_parsed": {
+    "major": 7211,
+    "minor": 0,
+    "patch": 0,
+    "pre": null,
+    "build_code": "7211",
+    "components": 1
+  },
+  "build_hash": null,
+  "description": "7211 (7211)"
+}

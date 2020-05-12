@@ -21,6 +21,11 @@ fn test_mobile() {
 }
 
 #[test]
+fn test_mobile_three_components() {
+    release_snapshot!("foo.bar.baz.App@1.0.0+20200101100");
+}
+
+#[test]
 fn test_mobile_dotted_secondary() {
     release_snapshot!("foo.bar.baz.App@1.0+1.0.200");
 }
@@ -33,4 +38,9 @@ fn test_hash() {
 #[test]
 fn test_qualified_hash() {
     release_snapshot!("package@085240e737828d8326719bf97730188e927e49ca");
+}
+
+#[test]
+fn test_single_component() {
+    release_snapshot!("com.foogame.FooGame@7211+7211");
 }

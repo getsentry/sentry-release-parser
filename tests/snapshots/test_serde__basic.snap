@@ -10,7 +10,8 @@ expression: "&release(\"@foo.bar.baz--blah@1.2.3-dev+BUILD-code\")"
     "minor": 2,
     "patch": 3,
     "pre": "dev",
-    "build_code": "BUILD-code"
+    "build_code": "BUILD-code",
+    "components": 3
   },
   "build_hash": null,
   "description": "1.2.3-dev (BUILD-code)"

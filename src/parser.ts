@@ -2,7 +2,7 @@ const RELEASE_REGEX = /^(@?[^@]+)@(.*?)$/;
 const VERSION_REGEX = new RegExp(
   `^
     (0|[1-9][0-9]*)
-    (?:\\.(0|[1-9][0-9]*))
+    (?:\\.(0|[1-9][0-9]*))?
     (?:\\.(0|[1-9][0-9]*))?
     (?:-?
         ((?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)
@@ -29,6 +29,7 @@ export interface Version {
   patch: number;
   pre?: string;
   buildCode?: string;
+  components: number;
 }
 
 export class Release {
@@ -51,7 +52,9 @@ export class Release {
       this.raw = release;
       this.package = releaseMatch[1];
       this.versionRaw = releaseMatch[2];
-      this.versionParsed = parseVersion(this.versionRaw) || undefined;
+      this.versionParsed =
+        (!isBuildHash(this.versionRaw) && parseVersion(this.versionRaw)) ||
+        undefined;
     } else {
       this.raw = release;
       this.versionRaw = release;
@@ -75,18 +78,23 @@ export class Release {
 
   describe(): string {
     const hash = this.getBuildHash();
-    const shortHash = hash && hash.substr(0, 12) || null;
+    const shortHash = (hash && hash.substr(0, 12)) || null;
     const v = this.versionParsed;
     let rv = "";
     if (v) {
-      rv += `${v.major}.${v.minor}.${v.patch}`;
+      rv += v.major;
+      if (v.components >= 2) {
+        rv += `.${v.minor}`;
+      }
+      if (v.components >= 3) {
+        rv += `.${v.patch}`;
+      }
       if (v.pre) {
         rv += "-" + v.pre;
       }
       if (shortHash) {
         rv += ` (${shortHash})`;
-      }
-      else if (v.buildCode) {
+      } else if (v.buildCode) {
         rv += ` (${v.buildCode})`;
       }
     } else if (shortHash) {
@@ -124,6 +132,7 @@ function parseVersion(version: string): Version | null {
     minor: parseInt(match[2] || "0", 10),
     patch: parseInt(match[3] || "0", 10),
     pre: match[4] || undefined,
-    buildCode: match[5] || undefined
+    buildCode: match[5] || undefined,
+    components: 1 + (match[2] ? 1 : 0) + (match[3] ? 1 : 0),
   };
 }
