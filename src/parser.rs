@@ -15,7 +15,7 @@ lazy_static! {
         r#"(?x)
         ^
             (?P<major>0|[1-9][0-9]*)
-            (?:\.(?P<minor>0|[1-9][0-9]*))
+            (?:\.(?P<minor>0|[1-9][0-9]*))?
             (?:\.(?P<patch>0|[1-9][0-9]*))?
             (?:-?
                 (?P<prerelease>(?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)
@@ -78,6 +78,7 @@ pub struct Version<'a> {
     patch: u64,
     pre: &'a str,
     build_code: &'a str,
+    components: u8,
 }
 
 #[cfg(feature = "serde")]
@@ -92,6 +93,7 @@ impl<'a> Serialize for Version<'a> {
         state.serialize_field("patch", &self.patch())?;
         state.serialize_field("pre", &self.pre())?;
         state.serialize_field("build_code", &self.build_code())?;
+        state.serialize_field("components", &self.components())?;
         state.end()
     }
 }
@@ -112,6 +114,7 @@ impl<'a> Version<'a> {
             return Err(InvalidVersion);
         };
 
+        let components = 1 + caps.get(2).map_or(0, |_| 1) + caps.get(3).map_or(0, |_| 1);
         Ok(Version {
             raw: version,
             major: caps[1].parse().unwrap_or(0),
@@ -125,6 +128,7 @@ impl<'a> Version<'a> {
                 .unwrap_or(0),
             pre: caps.get(4).map(|x| x.as_str()).unwrap_or(""),
             build_code: caps.get(5).map(|x| x.as_str()).unwrap_or(""),
+            components,
         })
     }
 
@@ -187,6 +191,11 @@ impl<'a> Version<'a> {
         }
     }
 
+    /// Returns the number of components.
+    pub fn components(&self) -> u8 {
+        self.components
+    }
+
     /// Returns the raw version as string.
     ///
     /// It's generally better to use `to_string` which normalizes.
@@ -207,7 +216,7 @@ impl<'a> Version<'a> {
 
 impl<'a> fmt::Display for Version<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}.{}.{}", self.major(), self.minor(), self.patch())?;
+        fmt::Display::fmt(&VersionDescription(self), f)?;
         if let Some(pre) = self.pre() {
             write!(f, "-{}", pre)?;
         }
@@ -255,21 +264,31 @@ impl<'a> Release<'a> {
             return Err(InvalidRelease::BadCharacters);
         }
         if let Some(caps) = RELEASE_REGEX.captures(release) {
-            let version = Version::parse(caps.get(2).unwrap().as_str()).ok();
-            Ok(Release {
-                raw: release,
-                package: caps.get(1).unwrap().as_str(),
-                version_raw: caps.get(2).unwrap().as_str(),
-                version,
-            })
-        } else {
-            Ok(Release {
-                raw: release,
-                package: "",
-                version_raw: release,
-                version: None,
-            })
+            let package = caps.get(1).unwrap().as_str();
+            let version_raw = caps.get(2).unwrap().as_str();
+            if !is_build_hash(version_raw) {
+                let version = Version::parse(version_raw).ok();
+                return Ok(Release {
+                    raw: release,
+                    package,
+                    version_raw,
+                    version,
+                });
+            } else {
+                return Ok(Release {
+                    raw: release,
+                    package,
+                    version_raw,
+                    version: None,
+                });
+            }
         }
+        Ok(Release {
+            raw: release,
+            package: "",
+            version_raw: release,
+            version: None,
+        })
     }
 
     /// Returns the raw version.
@@ -326,6 +345,33 @@ impl<'a> Release<'a> {
     }
 }
 
+#[derive(Debug)]
+struct VersionDescription<'a>(&'a Version<'a>);
+
+impl<'a> fmt::Display for VersionDescription<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.0.components() {
+            3 => {
+                write!(
+                    f,
+                    "{}.{}.{}",
+                    self.0.major(),
+                    self.0.minor(),
+                    self.0.patch()
+                )?;
+            }
+            2 => {
+                write!(f, "{}.{}", self.0.major(), self.0.minor())?;
+            }
+            1 => {
+                write!(f, "{}", self.0.major())?;
+            }
+            _ => unreachable!(),
+        }
+        Ok(())
+    }
+}
+
 /// Helper object to format a release into a description.
 #[derive(Debug)]
 pub struct ReleaseDescription<'a>(&'a Release<'a>);
@@ -339,7 +385,7 @@ impl<'a> fmt::Display for ReleaseDescription<'a> {
         };
 
         if let Some(ver) = self.0.version() {
-            write!(f, "{}.{}.{}", ver.major(), ver.minor(), ver.patch())?;
+            fmt::Display::fmt(&VersionDescription(ver), f)?;
             if let Some(pre) = ver.pre() {
                 write!(f, "-{}", pre)?;
             }

@@ -10,8 +10,9 @@ expression: "&release(\"foo.bar.baz.App@1.0+1.0.200\")"
     "minor": 0,
     "patch": 0,
     "pre": null,
-    "build_code": "1.0.200"
+    "build_code": "1.0.200",
+    "components": 2
   },
   "build_hash": null,
-  "description": "1.0.0 (1.0.200)"
+  "description": "1.0 (1.0.200)"
 }
