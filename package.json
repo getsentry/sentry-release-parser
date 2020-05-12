@@ -1,6 +1,6 @@
 {
   "name": "@sentry/release-parser",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "A release parser",
   "repository": "git://github.com/getsentry/sentry-release-parser.git",
   "homepage": "https://github.com/getsentry/sentry-release-parser",
