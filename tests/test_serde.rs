@@ -44,3 +44,28 @@ fn test_qualified_hash() {
 fn test_single_component() {
     release_snapshot!("com.foogame.FooGame@7211+7211");
 }
+
+#[test]
+fn test_invalid_date_release() {
+    release_snapshot!("some-api@2020.05.26-01.38.42");
+}
+
+#[test]
+fn test_valid_dotted_release() {
+    release_snapshot!("some-api@2020.2-1.2.3");
+}
+
+#[test]
+fn test_basic_prerelease() {
+    release_snapshot!("some-api@1.2.3-test");
+}
+
+#[test]
+fn test_implied_prerelease() {
+    release_snapshot!("some-api@1.0alpha2");
+}
+
+#[test]
+fn test_dashed_numeric_prerelease() {
+    release_snapshot!("some-api@1.0-1234");
+}

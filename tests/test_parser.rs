@@ -43,6 +43,29 @@ fn test_basic_short_ver() {
 }
 
 #[test]
+fn test_basic_short_ver_a2() {
+    let release = Release::parse("@foo.bar.baz--blah@1.0alpha2+build-code").unwrap();
+    assert_eq!(release.package(), Some("@foo.bar.baz--blah"));
+    assert_eq!(release.version_raw(), "1.0alpha2+build-code");
+
+    let version = release.version().unwrap();
+    assert_eq!(version.major(), 1);
+    assert_eq!(version.minor(), 0);
+    assert_eq!(version.patch(), 0);
+    assert_eq!(version.triple(), (1, 0, 0));
+    assert_eq!(version.pre(), Some("alpha2"));
+    assert_eq!(version.build_code(), Some("build-code"));
+
+    assert_eq!(release.build_hash(), None);
+    assert_eq!(
+        release.to_string(),
+        "@foo.bar.baz--blah@1.0-alpha2+build-code"
+    );
+
+    assert_eq!(release.describe().to_string(), "1.0-alpha2 (build-code)");
+}
+
+#[test]
 fn test_release_is_hash() {
     let release = Release::parse("a86d127c4b2f23a0a862620280427dcc01c78676").unwrap();
     assert_eq!(release.package(), None);

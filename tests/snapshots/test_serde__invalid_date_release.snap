@@ -1,0 +1,11 @@
+---
+source: tests/test_serde.rs
+expression: "&release(\"some-api@2020.05.26-01.38.42\")"
+---
+{
+  "package": "some-api",
+  "version_raw": "2020.05.26-01.38.42",
+  "version_parsed": null,
+  "build_hash": null,
+  "description": "some-api@2020.05.26-01.38.42"
+}

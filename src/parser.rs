@@ -17,9 +17,12 @@ lazy_static! {
             (?P<major>0|[1-9][0-9]*)
             (?:\.(?P<minor>0|[1-9][0-9]*))?
             (?:\.(?P<patch>0|[1-9][0-9]*))?
-            (?:-?
-                (?P<prerelease>(?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)
-                (?:\.(?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?
+            (?:
+                (?P<prerelease>
+                    (?:-|[a-z])
+                    (?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)?
+                    (?:\.(?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*)
+                )?
             (?:\+(?P<build_code>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?
         $
     "#
@@ -126,7 +129,16 @@ impl<'a> Version<'a> {
                 .get(3)
                 .and_then(|x| x.as_str().parse().ok())
                 .unwrap_or(0),
-            pre: caps.get(4).map(|x| x.as_str()).unwrap_or(""),
+            pre: caps
+                .get(4)
+                .map(|x| {
+                    let mut pre = x.as_str();
+                    if pre.starts_with('-') {
+                        pre = &pre[1..]
+                    }
+                    pre
+                })
+                .unwrap_or(""),
             build_code: caps.get(5).map(|x| x.as_str()).unwrap_or(""),
             components,
         })

@@ -4,9 +4,12 @@ const VERSION_REGEX = new RegExp(
     (0|[1-9][0-9]*)
     (?:\\.(0|[1-9][0-9]*))?
     (?:\\.(0|[1-9][0-9]*))?
-    (?:-?
-        ((?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)
-        (?:\\.(?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?
+    (?:
+        (
+            (?:-|[a-z])
+            (?:(?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)?
+            (?:\\.(?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?
+        )
     (?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?
 $`.replace(/\s/g, "")
 );
@@ -126,12 +129,17 @@ function parseVersion(version: string): Version | null {
     return null;
   }
 
+  let pre = match[4] || undefined;
+  if (pre && pre[0] == "-") {
+    pre = pre.substr(1);
+  }
+
   return {
     raw: version,
     major: parseInt(match[1], 10),
     minor: parseInt(match[2] || "0", 10),
     patch: parseInt(match[3] || "0", 10),
-    pre: match[4] || undefined,
+    pre,
     buildCode: match[5] || undefined,
     components: 1 + (match[2] ? 1 : 0) + (match[3] ? 1 : 0),
   };
