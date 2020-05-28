@@ -1,0 +1,18 @@
+---
+source: tests/test_serde.rs
+expression: "&release(\"some-api@1.2.3-test\")"
+---
+{
+  "package": "some-api",
+  "version_raw": "1.2.3-test",
+  "version_parsed": {
+    "major": 1,
+    "minor": 2,
+    "patch": 3,
+    "pre": "test",
+    "build_code": null,
+    "components": 3
+  },
+  "build_hash": null,
+  "description": "1.2.3-test"
+}
