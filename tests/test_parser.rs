@@ -1,3 +1,4 @@
+use similar_asserts::assert_eq;
 use sentry_release_parser::{InvalidRelease, Release};
 
 #[test]
