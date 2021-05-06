@@ -66,6 +66,21 @@ fn test_implied_prerelease() {
 }
 
 #[test]
+fn test_four_components() {
+    assert_release_snapshot!("some-api@1.0.0.0");
+}
+
+#[test]
 fn test_dashed_numeric_prerelease() {
     assert_release_snapshot!("some-api@1.0-1234");
+}
+
+#[test]
+fn test_leading_zeroes() {
+    assert_release_snapshot!("foo@01.02.003.4-alpha+1234");
+}
+
+#[test]
+fn test_version_only() {
+    assert_release_snapshot!("foo@20210505090610352561");
 }

@@ -14,9 +14,10 @@ lazy_static! {
     static ref VERSION_REGEX: Regex = Regex::new(
         r#"(?x)
         ^
-            (?P<major>0|[1-9][0-9]*)
-            (?:\.(?P<minor>0|[1-9][0-9]*))?
-            (?:\.(?P<patch>0|[1-9][0-9]*))?
+            (?P<major>[0-9][0-9]*)
+            (?:\.(?P<minor>[0-9][0-9]*))?
+            (?:\.(?P<patch>[0-9][0-9]*))?
+            (?:\.(?P<revision>[0-9][0-9]*))?
             (?:
                 (?P<prerelease>
                     (?:-|[a-z])
@@ -76,9 +77,10 @@ impl fmt::Display for InvalidRelease {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Version<'a> {
     raw: &'a str,
-    major: u64,
-    minor: u64,
-    patch: u64,
+    major: &'a str,
+    minor: &'a str,
+    patch: &'a str,
+    revision: &'a str,
     pre: &'a str,
     build_code: &'a str,
     components: u8,
@@ -94,9 +96,11 @@ impl<'a> Serialize for Version<'a> {
         state.serialize_field("major", &self.major())?;
         state.serialize_field("minor", &self.minor())?;
         state.serialize_field("patch", &self.patch())?;
+        state.serialize_field("revision", &self.revision())?;
         state.serialize_field("pre", &self.pre())?;
         state.serialize_field("build_code", &self.build_code())?;
         state.serialize_field("components", &self.components())?;
+        state.serialize_field("raw_quad", &self.raw_quad())?;
         state.end()
     }
 }
@@ -117,20 +121,18 @@ impl<'a> Version<'a> {
             return Err(InvalidVersion);
         };
 
-        let components = 1 + caps.get(2).map_or(0, |_| 1) + caps.get(3).map_or(0, |_| 1);
+        let components = 1
+            + caps.get(2).map_or(0, |_| 1)
+            + caps.get(3).map_or(0, |_| 1)
+            + caps.get(4).map_or(0, |_| 1);
         Ok(Version {
             raw: version,
-            major: caps[1].parse().unwrap_or(0),
-            minor: caps
-                .get(2)
-                .and_then(|x| x.as_str().parse().ok())
-                .unwrap_or(0),
-            patch: caps
-                .get(3)
-                .and_then(|x| x.as_str().parse().ok())
-                .unwrap_or(0),
+            major: caps.get(1).map(|x| x.as_str()).unwrap_or_default(),
+            minor: caps.get(2).map(|x| x.as_str()).unwrap_or_default(),
+            patch: caps.get(3).map(|x| x.as_str()).unwrap_or_default(),
+            revision: caps.get(4).map(|x| x.as_str()).unwrap_or_default(),
             pre: caps
-                .get(4)
+                .get(5)
                 .map(|x| {
                     let mut pre = x.as_str();
                     if pre.starts_with('-') {
@@ -139,7 +141,7 @@ impl<'a> Version<'a> {
                     pre
                 })
                 .unwrap_or(""),
-            build_code: caps.get(5).map(|x| x.as_str()).unwrap_or(""),
+            build_code: caps.get(6).map(|x| x.as_str()).unwrap_or(""),
             components,
         })
     }
@@ -162,9 +164,9 @@ impl<'a> Version<'a> {
         }
 
         semver::Version {
-            major: self.major,
-            minor: self.minor,
-            patch: self.patch,
+            major: self.major(),
+            minor: self.minor(),
+            patch: self.patch(),
             pre: split(self.pre),
             build: split(self.build_code),
         }
@@ -172,17 +174,22 @@ impl<'a> Version<'a> {
 
     /// Returns the major version component.
     pub fn major(&self) -> u64 {
-        self.major
+        self.major.parse().unwrap_or_default()
     }
 
     /// Returns the minor version component.
     pub fn minor(&self) -> u64 {
-        self.minor
+        self.minor.parse().unwrap_or_default()
     }
 
     /// Returns the patch level version component.
     pub fn patch(&self) -> u64 {
-        self.patch
+        self.patch.parse().unwrap_or_default()
+    }
+
+    /// Returns the revision level version component.
+    pub fn revision(&self) -> u64 {
+        self.revision.parse().unwrap_or_default()
     }
 
     /// If a pre-release identifier is included returns that.
@@ -203,6 +210,11 @@ impl<'a> Version<'a> {
         }
     }
 
+    /// Returns the build code as build number.
+    pub fn build_number(&self) -> Option<u64> {
+        self.build_code().and_then(|val| val.parse().ok())
+    }
+
     /// Returns the number of components.
     pub fn components(&self) -> u8 {
         self.components
@@ -217,12 +229,22 @@ impl<'a> Version<'a> {
 
     /// Returns the version triple (major, minor, patch)
     pub fn triple(&self) -> (u64, u64, u64) {
-        (self.major, self.minor, self.patch)
+        (self.major(), self.minor(), self.patch())
     }
 
-    /// Returns the version triple with an added pre-release marker.
-    pub fn quad(&self) -> (u64, u64, u64, Option<&str>) {
-        (self.major, self.minor, self.patch, self.pre())
+    /// Returns the version quadruple.
+    pub fn quad(&self) -> (u64, u64, u64, u64) {
+        (self.major(), self.minor(), self.patch(), self.revision())
+    }
+
+    /// Returns the version quadruple as raw strings.
+    pub fn raw_quad(&self) -> (&str, Option<&str>, Option<&str>, Option<&str>) {
+        (
+            self.major,
+            (self.components > 1).then(|| self.minor),
+            (self.components > 2).then(|| self.patch),
+            (self.components > 3).then(|| self.revision),
+        )
     }
 }
 
@@ -362,21 +384,18 @@ struct VersionDescription<'a>(&'a Version<'a>);
 
 impl<'a> fmt::Display for VersionDescription<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self.0.components() {
-            3 => {
-                write!(
-                    f,
-                    "{}.{}.{}",
-                    self.0.major(),
-                    self.0.minor(),
-                    self.0.patch()
-                )?;
+        match self.0.raw_quad() {
+            (major, Some(minor), Some(patch), Some(revision)) => {
+                write!(f, "{}.{}.{}.{}", major, minor, patch, revision)?;
             }
-            2 => {
-                write!(f, "{}.{}", self.0.major(), self.0.minor())?;
+            (major, Some(minor), Some(patch), None) => {
+                write!(f, "{}.{}.{}", major, minor, patch,)?;
             }
-            1 => {
-                write!(f, "{}", self.0.major())?;
+            (major, Some(minor), None, None) => {
+                write!(f, "{}.{}", major, minor)?;
+            }
+            (major, None, None, None) => {
+                write!(f, "{}", major)?;
             }
             _ => unreachable!(),
         }

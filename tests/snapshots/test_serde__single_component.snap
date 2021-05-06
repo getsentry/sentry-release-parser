@@ -1,6 +1,7 @@
 ---
 source: tests/test_serde.rs
 expression: "&release(\"com.foogame.FooGame@7211+7211\")"
+
 ---
 {
   "package": "com.foogame.FooGame",
@@ -9,9 +10,16 @@ expression: "&release(\"com.foogame.FooGame@7211+7211\")"
     "major": 7211,
     "minor": 0,
     "patch": 0,
+    "revision": 0,
     "pre": null,
     "build_code": "7211",
-    "components": 1
+    "components": 1,
+    "raw_quad": [
+      "7211",
+      null,
+      null,
+      null
+    ]
   },
   "build_hash": null,
   "description": "7211 (7211)"

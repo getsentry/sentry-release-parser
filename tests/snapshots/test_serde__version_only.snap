@@ -1,0 +1,12 @@
+---
+source: tests/test_serde.rs
+expression: "&release(\"foo@20210505090610352561\")"
+
+---
+{
+  "package": "foo",
+  "version_raw": "20210505090610352561",
+  "version_parsed": null,
+  "build_hash": "20210505090610352561",
+  "description": "202105050906"
+}
