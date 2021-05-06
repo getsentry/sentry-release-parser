@@ -409,11 +409,10 @@ pub struct ReleaseDescription<'a>(&'a Release<'a>);
 
 impl<'a> fmt::Display for ReleaseDescription<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let short_hash = if let Some(hash) = self.0.build_hash() {
-            Some(hash.get(..12).unwrap_or(hash))
-        } else {
-            None
-        };
+        let short_hash = self
+            .0
+            .build_hash()
+            .map(|hash| hash.get(..12).unwrap_or(hash));
 
         if let Some(ver) = self.0.version() {
             fmt::Display::fmt(&VersionDescription(ver), f)?;
