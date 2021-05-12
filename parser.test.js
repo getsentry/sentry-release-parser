@@ -3,7 +3,7 @@ const { Release } = require("./lib/parser.js");
 
 test("parse snapshots", () => {
   // check against the rust snapshots
-  fs.readdirSync("tests/snapshots").forEach(snap => {
+  fs.readdirSync("tests/snapshots").forEach((snap) => {
     const match = fs
       .readFileSync(`tests/snapshots/${snap}`, "utf-8")
       .match(/expression: \"&release\((.*?)\)\"\n.*?---\n(.*)?$/s);
@@ -18,6 +18,8 @@ test("parse snapshots", () => {
       expect(v.major).toEqual(output.version_parsed.major);
       expect(v.minor).toEqual(output.version_parsed.minor);
       expect(v.patch).toEqual(output.version_parsed.patch);
+      expect(v.revision).toEqual(output.version_parsed.revision);
+      expect(v.rawQuad).toEqual(output.version_parsed.raw_quad);
       expect(v.pre || null).toEqual(output.version_parsed.pre || null);
       expect(v.buildCode || null).toEqual(
         output.version_parsed.build_code || null

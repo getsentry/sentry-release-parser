@@ -1,9 +1,10 @@
 const RELEASE_REGEX = /^(@?[^@]+)@(.*?)$/;
 const VERSION_REGEX = new RegExp(
   `^
-    (0|[1-9][0-9]*)
-    (?:\\.(0|[1-9][0-9]*))?
-    (?:\\.(0|[1-9][0-9]*))?
+    ([0-9][0-9]*)
+    (?:\\.([0-9][0-9]*))?
+    (?:\\.([0-9][0-9]*))?
+    (?:\\.([0-9][0-9]*))?
     (?:
         (
             (?:-|[a-z])
@@ -30,9 +31,11 @@ export interface Version {
   major: number;
   minor: number;
   patch: number;
+  revision: number;
   pre?: string;
   buildCode?: string;
   components: number;
+  rawQuad: [string, string | null, string | null, string | null];
 }
 
 export class Release {
@@ -85,12 +88,16 @@ export class Release {
     const v = this.versionParsed;
     let rv = "";
     if (v) {
-      rv += v.major;
-      if (v.components >= 2) {
-        rv += `.${v.minor}`;
+      const [major, minor, patch, revision] = v.rawQuad;
+      rv += major;
+      if (minor) {
+        rv += `.${minor}`;
       }
-      if (v.components >= 3) {
-        rv += `.${v.patch}`;
+      if (patch) {
+        rv += `.${patch}`;
+      }
+      if (revision) {
+        rv += `.${revision}`;
       }
       if (v.pre) {
         rv += "-" + v.pre;
@@ -129,18 +136,28 @@ function parseVersion(version: string): Version | null {
     return null;
   }
 
-  let pre = match[4] || undefined;
+  let pre = match[5] || undefined;
   if (pre && pre[0] == "-") {
     pre = pre.substr(1);
   }
+
+  let rawQuad: [string, string | null, string | null, string | null] = [
+    match[1],
+    match[2] || null,
+    match[3] || null,
+    match[4] || null,
+  ];
+  const components = rawQuad.reduce((acc, cur) => acc + (cur ? 1 : 0), 0);
 
   return {
     raw: version,
     major: parseInt(match[1], 10),
     minor: parseInt(match[2] || "0", 10),
     patch: parseInt(match[3] || "0", 10),
+    revision: parseInt(match[4] || "0", 10),
     pre,
-    buildCode: match[5] || undefined,
-    components: 1 + (match[2] ? 1 : 0) + (match[3] ? 1 : 0),
+    buildCode: match[6] || undefined,
+    components,
+    rawQuad,
   };
 }

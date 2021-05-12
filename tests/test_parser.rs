@@ -1,5 +1,5 @@
-use similar_asserts::assert_eq;
 use sentry_release_parser::{InvalidRelease, Release};
+use similar_asserts::assert_eq;
 
 #[test]
 fn test_basic() {
@@ -137,11 +137,18 @@ fn test_release_build_note_is_hash() {
 
 #[test]
 fn test_four_component_version() {
-    let release = Release::parse("foo.bar.baz@1.2.3.4").unwrap();
+    let release = Release::parse("foo.bar.baz@1.2.3.04").unwrap();
     assert_eq!(release.package(), Some("foo.bar.baz"));
-    assert_eq!(release.version_raw(), "1.2.3.4");
-    assert_eq!(release.version(), None);
-    assert_eq!(release.to_string(), "foo.bar.baz@1.2.3.4");
+    assert_eq!(release.version_raw(), "1.2.3.04");
+    let version = release.version().unwrap();
+    assert_eq!(version.major(), 1);
+    assert_eq!(version.minor(), 2);
+    assert_eq!(version.patch(), 3);
+    assert_eq!(version.revision(), 4);
+    assert_eq!(version.triple(), (1, 2, 3));
+    assert_eq!(version.quad(), (1, 2, 3, 4));
+    assert_eq!(version.raw_quad(), ("1", Some("2"), Some("3"), Some("04")));
+    assert_eq!(release.to_string(), "foo.bar.baz@1.2.3.04");
 }
 
 #[test]

@@ -1,6 +1,7 @@
 ---
 source: tests/test_serde.rs
 expression: "&release(\"some-api@1.2.3-test\")"
+
 ---
 {
   "package": "some-api",
@@ -9,9 +10,16 @@ expression: "&release(\"some-api@1.2.3-test\")"
     "major": 1,
     "minor": 2,
     "patch": 3,
+    "revision": 0,
     "pre": "test",
     "build_code": null,
-    "components": 3
+    "components": 3,
+    "raw_quad": [
+      "1",
+      "2",
+      "3",
+      null
+    ]
   },
   "build_hash": null,
   "description": "1.2.3-test"

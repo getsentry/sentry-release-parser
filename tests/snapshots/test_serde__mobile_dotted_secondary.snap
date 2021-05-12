@@ -1,6 +1,7 @@
 ---
 source: tests/test_serde.rs
 expression: "&release(\"foo.bar.baz.App@1.0+1.0.200\")"
+
 ---
 {
   "package": "foo.bar.baz.App",
@@ -9,9 +10,16 @@ expression: "&release(\"foo.bar.baz.App@1.0+1.0.200\")"
     "major": 1,
     "minor": 0,
     "patch": 0,
+    "revision": 0,
     "pre": null,
     "build_code": "1.0.200",
-    "components": 2
+    "components": 2,
+    "raw_quad": [
+      "1",
+      "0",
+      null,
+      null
+    ]
   },
   "build_hash": null,
   "description": "1.0 (1.0.200)"
