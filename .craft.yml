@@ -8,7 +8,7 @@ targets:
     - name: github
     - name: crates
     - name: npm
-    access: public
+      access: public
 statusProvider:
   name: github
 artifactProvider:
