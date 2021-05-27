@@ -22,9 +22,9 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: yarn install --frozen-lockfile
       - run: make test
-      - run: make build
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ github.sha }}
           path: |
             ${{ github.workspace }}/*.tgz
+            # TODO(byk): Update here with what we expect from `cargo build`
