@@ -27,3 +27,4 @@ jobs:
           name: ${{ github.sha }}
           path: |
             ${{ github.workspace }}/*.tgz
+            # TODO(byk): Update here with what we expect from `cargo build`

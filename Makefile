@@ -6,9 +6,9 @@ clean:
 .PHONY: clean
 
 build:
-	@cargo build
-	@yarn
 	@yarn build
+	@yarn pack
+	@cargo build
 
 .PHONY: build
 

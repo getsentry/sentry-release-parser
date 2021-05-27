@@ -1,7 +1,4 @@
 minVersion: '0.22.2'
-github:
-  owner: getsentry
-  repo: sentry-release-parser
 changelogPolicy: none
 preReleaseCommand: ./scripts/bump-version.sh
 targets:
@@ -9,7 +6,3 @@ targets:
     - name: crates
     - name: npm
       access: public
-statusProvider:
-  name: github
-artifactProvider:
-  name: github
