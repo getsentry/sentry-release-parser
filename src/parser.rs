@@ -287,8 +287,10 @@ impl<'a> Serialize for Release<'a> {
 }
 
 impl<'a> Release<'a> {
-    /// Parses a release from a string.
-    pub fn parse(release: &'a str) -> Result<Release<'a>, InvalidRelease> {
+    /// Validates a release string.
+    ///
+    /// Returns the trimmed string on success.
+    pub fn check(release: &str) -> Result<&str, InvalidRelease> {
         let release = release.trim();
         if release.len() > 250 {
             return Err(InvalidRelease::TooLong);
@@ -297,6 +299,14 @@ impl<'a> Release<'a> {
         } else if !VALID_RELEASE_REGEX.is_match(release) {
             return Err(InvalidRelease::BadCharacters);
         }
+
+        Ok(release)
+    }
+
+    /// Parses a release from a string.
+    pub fn parse(release: &'a str) -> Result<Self, InvalidRelease> {
+        let release = Self::check(release)?;
+
         if let Some(caps) = RELEASE_REGEX.captures(release) {
             let package = caps.get(1).unwrap().as_str();
             let version_raw = caps.get(2).unwrap().as_str();
