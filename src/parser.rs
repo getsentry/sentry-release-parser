@@ -10,7 +10,7 @@ use serde::{
 };
 
 lazy_static! {
-    static ref RELEASE_REGEX: Regex = Regex::new(r#"^(@?[^@]+)@(.*?)$"#).unwrap();
+    static ref RELEASE_REGEX: Regex = Regex::new(r#"^(@?[^@]+)@(.+?)$"#).unwrap();
     static ref VERSION_REGEX: Regex = Regex::new(
         r#"(?x)
         ^

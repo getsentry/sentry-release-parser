@@ -1,4 +1,4 @@
-const RELEASE_REGEX = /^(@?[^@]+)@(.*?)$/;
+const RELEASE_REGEX = /^(@?[^@]+)@(.+?)$/;
 const VERSION_REGEX = new RegExp(
   `^
     ([0-9][0-9]*)

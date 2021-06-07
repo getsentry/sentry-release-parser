@@ -84,3 +84,8 @@ fn test_leading_zeroes() {
 fn test_version_only() {
     assert_release_snapshot!("foo@20210505090610352561");
 }
+
+#[test]
+fn test_empty_version() {
+    assert_release_snapshot!("foo@");
+}
