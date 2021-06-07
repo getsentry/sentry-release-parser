@@ -1,0 +1,12 @@
+---
+source: tests/test_serde.rs
+expression: "&release(\"foo@\")"
+
+---
+{
+  "package": null,
+  "version_raw": "foo@",
+  "version_parsed": null,
+  "build_hash": null,
+  "description": "foo@"
+}
