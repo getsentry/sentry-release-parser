@@ -321,7 +321,7 @@ pub fn validate_release(release: &str) -> Result<(), InvalidRelease> {
         Err(InvalidRelease::TooLong)
     } else if release == "." || release == ".." || release == "latest" {
         Err(InvalidRelease::RestrictedName)
-    } else if !VALID_TAG_REGEX.is_match(release) {
+    } else if !VALID_API_ATTRIBUTE_REGEX.is_match(release) {
         Err(InvalidRelease::BadCharacters)
     } else {
         Ok(())
@@ -334,7 +334,7 @@ pub fn validate_environment(environment: &str) -> Result<(), InvalidEnvironment>
         Err(InvalidEnvironment::TooLong)
     } else if environment == "." || environment == ".." || environment == "none" {
         Err(InvalidEnvironment::RestrictedName)
-    } else if ! VALID_API_ATTRIBUTE_REGEX.is_match(environment) {
+    } else if !VALID_API_ATTRIBUTE_REGEX.is_match(environment) {
         Err(InvalidEnvironment::BadCharacters)
     } else {
         Ok(())
