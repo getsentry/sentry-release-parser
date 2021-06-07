@@ -30,7 +30,9 @@ lazy_static! {
     )
     .unwrap();
     static ref HEX_REGEX: Regex = Regex::new(r#"^[a-fA-F0-9]+$"#).unwrap();
-    static ref VALID_RELEASE_REGEX: Regex = Regex::new(r"^[^/\r\n]*\z").unwrap();
+    // what can or cannot go through the API which is a limiting factor for
+    // releases and environments.
+    static ref VALID_API_ATTRIBUTE_REGEX: Regex = Regex::new(r"^[^/\r\n\t\x0c]*\z").unwrap();
 }
 
 /// An error indicating invalid versions.
@@ -57,6 +59,17 @@ pub enum InvalidRelease {
     BadCharacters,
 }
 
+/// An error indicating invalid environment.
+#[derive(Debug, Clone, PartialEq)]
+pub enum InvalidEnvironment {
+    /// The environment name was too long
+    TooLong,
+    /// Environment name is restricted
+    RestrictedName,
+    /// The environment contained invalid characters
+    BadCharacters,
+}
+
 impl std::error::Error for InvalidRelease {}
 
 impl fmt::Display for InvalidRelease {
@@ -68,6 +81,22 @@ impl fmt::Display for InvalidRelease {
                 InvalidRelease::BadCharacters => "bad characters in release name",
                 InvalidRelease::RestrictedName => "restricted release name",
                 InvalidRelease::TooLong => "release name too long",
+            }
+        )
+    }
+}
+
+impl std::error::Error for InvalidEnvironment {}
+
+impl fmt::Display for InvalidEnvironment {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "invalid environment: {}",
+            match *self {
+                InvalidEnvironment::BadCharacters => "bad characters in environment name",
+                InvalidEnvironment::RestrictedName => "restricted environment name",
+                InvalidEnvironment::TooLong => "environment name too long",
             }
         )
     }
@@ -286,17 +315,37 @@ impl<'a> Serialize for Release<'a> {
     }
 }
 
+/// Given a string checks if the release is generally valid.
+pub fn validate_release(release: &str) -> Result<(), InvalidRelease> {
+    if release.len() > 200 {
+        Err(InvalidRelease::TooLong)
+    } else if release == "." || release == ".." || release == "latest" {
+        Err(InvalidRelease::RestrictedName)
+    } else if !VALID_API_ATTRIBUTE_REGEX.is_match(release) {
+        Err(InvalidRelease::BadCharacters)
+    } else {
+        Ok(())
+    }
+}
+
+/// Given a string checks if the environment name is generally valid.
+pub fn validate_environment(environment: &str) -> Result<(), InvalidEnvironment> {
+    if environment.len() > 64 {
+        Err(InvalidEnvironment::TooLong)
+    } else if environment == "." || environment == ".." || environment == "none" {
+        Err(InvalidEnvironment::RestrictedName)
+    } else if !VALID_API_ATTRIBUTE_REGEX.is_match(environment) {
+        Err(InvalidEnvironment::BadCharacters)
+    } else {
+        Ok(())
+    }
+}
+
 impl<'a> Release<'a> {
     /// Parses a release from a string.
     pub fn parse(release: &'a str) -> Result<Release<'a>, InvalidRelease> {
         let release = release.trim();
-        if release.len() > 250 {
-            return Err(InvalidRelease::TooLong);
-        } else if release == "." || release == ".." || release == "latest" {
-            return Err(InvalidRelease::RestrictedName);
-        } else if !VALID_RELEASE_REGEX.is_match(release) {
-            return Err(InvalidRelease::BadCharacters);
-        }
+        validate_release(release)?;
         if let Some(caps) = RELEASE_REGEX.captures(release) {
             let package = caps.get(1).unwrap().as_str();
             let version_raw = caps.get(2).unwrap().as_str();
@@ -453,4 +502,44 @@ impl<'a> fmt::Display for Release<'a> {
         }
         Ok(())
     }
+}
+
+#[test]
+fn test_release_validation() {
+    assert_eq!(
+        validate_release("latest"),
+        Err(InvalidRelease::RestrictedName)
+    );
+    assert_eq!(validate_release("."), Err(InvalidRelease::RestrictedName));
+    assert_eq!(validate_release(".."), Err(InvalidRelease::RestrictedName));
+    assert_eq!(
+        validate_release("foo\nbar"),
+        Err(InvalidRelease::BadCharacters)
+    );
+    assert_eq!(validate_release("good"), Ok(()));
+}
+
+#[test]
+fn test_environment_validation() {
+    assert_eq!(
+        validate_environment("none"),
+        Err(InvalidEnvironment::RestrictedName)
+    );
+    assert_eq!(
+        validate_environment("."),
+        Err(InvalidEnvironment::RestrictedName)
+    );
+    assert_eq!(
+        validate_environment(".."),
+        Err(InvalidEnvironment::RestrictedName)
+    );
+    assert_eq!(
+        validate_environment("f4f3db928593f258e1d850997be07b577f0779cc5549f9968bae625ea001175bX"),
+        Err(InvalidEnvironment::TooLong)
+    );
+    assert_eq!(
+        validate_environment("foo\nbar"),
+        Err(InvalidEnvironment::BadCharacters)
+    );
+    assert_eq!(validate_environment("good"), Ok(()));
 }
