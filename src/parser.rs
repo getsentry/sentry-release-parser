@@ -30,7 +30,9 @@ lazy_static! {
     )
     .unwrap();
     static ref HEX_REGEX: Regex = Regex::new(r#"^[a-fA-F0-9]+$"#).unwrap();
-    static ref VALID_TAG_REGEX: Regex = Regex::new(r"^[^/\r\n\t\x0c]*\z").unwrap();
+    // what can or cannot go through the API which is a limiting factor for
+    // releases and environments.
+    static ref VALID_API_ATTRIBUTE_REGEX: Regex = Regex::new(r"^[^/\r\n\t\x0c]*\z").unwrap();
 }
 
 /// An error indicating invalid versions.
