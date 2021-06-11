@@ -1,30 +1,20 @@
-name: build
+name: Build
+
 on:
   push:
     branches:
-      - master
       - release/**
-  pull_request:
 
 jobs:
   build:
-    name: build
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: volta-cli/action@v1
-      - uses: actions/cache@v2
-        id: cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-${{ hashFiles('package.json', 'yarn.lock') }}
-      - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn install --frozen-lockfile
-      - run: make test
+      - run: yarn pack
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ github.sha }}
           path: |
             ${{ github.workspace }}/*.tgz
-            # TODO(byk): Update here with what we expect from `cargo build`
