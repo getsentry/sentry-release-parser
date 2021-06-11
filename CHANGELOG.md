@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.1
 
 - Apply case insensitive checks for restricted release and environment names. ([#18](https://github.com/getsentry/sentry-release-parser/pull/18))
 
