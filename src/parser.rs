@@ -319,7 +319,7 @@ impl<'a> Serialize for Release<'a> {
 pub fn validate_release(release: &str) -> Result<(), InvalidRelease> {
     if release.len() > 200 {
         Err(InvalidRelease::TooLong)
-    } else if release == "." || release == ".." || release == "latest" {
+    } else if release == "." || release == ".." || release.eq_ignore_ascii_case("latest") {
         Err(InvalidRelease::RestrictedName)
     } else if !VALID_API_ATTRIBUTE_REGEX.is_match(release) {
         Err(InvalidRelease::BadCharacters)
@@ -332,7 +332,8 @@ pub fn validate_release(release: &str) -> Result<(), InvalidRelease> {
 pub fn validate_environment(environment: &str) -> Result<(), InvalidEnvironment> {
     if environment.len() > 64 {
         Err(InvalidEnvironment::TooLong)
-    } else if environment == "." || environment == ".." || environment == "none" {
+    } else if environment == "." || environment == ".." || environment.eq_ignore_ascii_case("none")
+    {
         Err(InvalidEnvironment::RestrictedName)
     } else if !VALID_API_ATTRIBUTE_REGEX.is_match(environment) {
         Err(InvalidEnvironment::BadCharacters)
