@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.2
 
 - Single component versions require dash for pre-releases now. ([#20](https://github.com/getsentry/sentry-release-parser/pull/20))
 
