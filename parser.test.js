@@ -24,6 +24,8 @@ test("parse snapshots", () => {
       expect(v.buildCode || null).toEqual(
         output.version_parsed.build_code || null
       );
+    } else {
+      expect(parsedRelease.versionParsed).toEqual(undefined);
     }
   });
 });

@@ -1,0 +1,12 @@
+---
+source: tests/test_serde.rs
+expression: "&release(\"hackweek@6f85d2f\")"
+
+---
+{
+  "package": "hackweek",
+  "version_raw": "6f85d2f",
+  "version_parsed": null,
+  "build_hash": null,
+  "description": "hackweek@6f85d2f"
+}
