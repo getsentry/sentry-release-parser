@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Single component versions require dash for pre-releases now. ([#20](https://github.com/getsentry/sentry-release-parser/pull/20))
+
 ## 1.1.1
 
 - Apply case insensitive checks for restricted release and environment names. ([#18](https://github.com/getsentry/sentry-release-parser/pull/18))
