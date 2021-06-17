@@ -137,6 +137,15 @@ function parseVersion(version: string): Version | null {
   }
 
   let pre = match[5] || undefined;
+
+  // this is a special case we don't want to capture with a regex. If there is
+  // only one single version component and the pre-release marker does not start
+  // with a dash, we consider it. This means 1.0a1 is okay, 1-a1 is as well, but
+  // 1a1 is not.
+  if (!match[2] && pre && !pre.match(/^-/)) {
+    return null;
+  }
+
   if (pre && pre[0] == "-") {
     pre = pre.substr(1);
   }

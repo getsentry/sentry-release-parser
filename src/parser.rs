@@ -154,6 +154,14 @@ impl<'a> Version<'a> {
             + caps.get(2).map_or(0, |_| 1)
             + caps.get(3).map_or(0, |_| 1)
             + caps.get(4).map_or(0, |_| 1);
+
+        // this is a special case we don't want to capture with a regex.  If there is only one
+        // single version component and the pre-release marker does not start with a dash, we
+        // consider it.  This means 1.0a1 is okay, 1-a1 is as well, but 1a1 is not.
+        if components == 1 && caps.get(5).map_or(false, |x| !x.as_str().starts_with('-')) {
+            return Err(InvalidVersion);
+        }
+
         Ok(Version {
             raw: version,
             major: caps.get(1).map(|x| x.as_str()).unwrap_or_default(),
@@ -165,7 +173,7 @@ impl<'a> Version<'a> {
                 .map(|x| {
                     let mut pre = x.as_str();
                     if pre.starts_with('-') {
-                        pre = &pre[1..]
+                        pre = &pre[1..];
                     }
                     pre
                 })

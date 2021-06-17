@@ -89,3 +89,8 @@ fn test_version_only() {
 fn test_empty_version() {
     assert_release_snapshot!("foo@");
 }
+
+#[test]
+fn test_not_a_version() {
+    assert_release_snapshot!("hackweek@6f85d2f");
+}
