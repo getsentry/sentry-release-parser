@@ -12,7 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: volta-cli/action@v1
-      - run: yarn pack
+      - run: |
+          yarn build
+          yarn pack
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ github.sha }}
