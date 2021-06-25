@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.4
 
 - Lower compile target to ES6
 
