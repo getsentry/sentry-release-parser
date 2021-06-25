@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Lower compile target to ES6
+
 ## 1.1.3
 
 - Add back TypeScript definitions to the NPM package.
