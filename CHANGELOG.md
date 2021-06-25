@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fix module bundling
+- Lower compile target to ES6
 
 ## 1.1.3
 
