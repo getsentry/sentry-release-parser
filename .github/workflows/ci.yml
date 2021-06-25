@@ -100,7 +100,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('package.json', 'yarn.lock') }}
 
       - if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn install --forzen-lockfile
+        run: yarn install --frozen-lockfile
 
       - run: |
           yarn build
