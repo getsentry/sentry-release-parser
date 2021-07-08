@@ -111,6 +111,7 @@ pub struct Version<'a> {
     patch: &'a str,
     revision: &'a str,
     pre: &'a str,
+    before_code: &'a str,
     build_code: &'a str,
     components: u8,
 }
@@ -128,6 +129,7 @@ impl<'a> Serialize for Version<'a> {
         state.serialize_field("revision", &self.revision())?;
         state.serialize_field("pre", &self.pre())?;
         state.serialize_field("build_code", &self.build_code())?;
+        state.serialize_field("raw_short", &self.raw_short())?;
         state.serialize_field("components", &self.components())?;
         state.serialize_field("raw_quad", &self.raw_quad())?;
         state.end()
@@ -162,6 +164,11 @@ impl<'a> Version<'a> {
             return Err(InvalidVersion);
         }
 
+        let before_code = match caps.get(6) {
+            Some(cap) => &version[..cap.start() - 1],
+            None => version,
+        };
+
         Ok(Version {
             raw: version,
             major: caps.get(1).map(|x| x.as_str()).unwrap_or_default(),
@@ -178,6 +185,7 @@ impl<'a> Version<'a> {
                     pre
                 })
                 .unwrap_or(""),
+            before_code,
             build_code: caps.get(6).map(|x| x.as_str()).unwrap_or(""),
             components,
         })
@@ -264,6 +272,16 @@ impl<'a> Version<'a> {
         self.raw
     }
 
+    /// Returns the part of the version raw before the build code.
+    ///
+    /// This is useful as the system can mis-parse some versions and
+    /// instead of formatting out the version from the parts, this can
+    /// be used to format out the version part as it was input by the
+    /// user but still abbreviate the build code.
+    pub fn raw_short(&self) -> &str {
+        self.before_code
+    }
+
     /// Returns the version triple (major, minor, patch)
     pub fn triple(&self) -> (u64, u64, u64) {
         (self.major(), self.minor(), self.patch())
@@ -287,13 +305,7 @@ impl<'a> Version<'a> {
 
 impl<'a> fmt::Display for Version<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Display::fmt(&VersionDescription(self), f)?;
-        if let Some(pre) = self.pre() {
-            write!(f, "-{}", pre)?;
-        }
-        if let Some(build_code) = self.build_code() {
-            write!(f, "+{}", build_code)?;
-        }
+        write!(f, "{}", self.raw)?;
         Ok(())
     }
 }
@@ -437,30 +449,6 @@ impl<'a> Release<'a> {
     }
 }
 
-#[derive(Debug)]
-struct VersionDescription<'a>(&'a Version<'a>);
-
-impl<'a> fmt::Display for VersionDescription<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self.0.raw_quad() {
-            (major, Some(minor), Some(patch), Some(revision)) => {
-                write!(f, "{}.{}.{}.{}", major, minor, patch, revision)?;
-            }
-            (major, Some(minor), Some(patch), None) => {
-                write!(f, "{}.{}.{}", major, minor, patch,)?;
-            }
-            (major, Some(minor), None, None) => {
-                write!(f, "{}.{}", major, minor)?;
-            }
-            (major, None, None, None) => {
-                write!(f, "{}", major)?;
-            }
-            _ => unreachable!(),
-        }
-        Ok(())
-    }
-}
-
 /// Helper object to format a release into a description.
 #[derive(Debug)]
 pub struct ReleaseDescription<'a>(&'a Release<'a>);
@@ -473,10 +461,7 @@ impl<'a> fmt::Display for ReleaseDescription<'a> {
             .map(|hash| hash.get(..12).unwrap_or(hash));
 
         if let Some(ver) = self.0.version() {
-            fmt::Display::fmt(&VersionDescription(ver), f)?;
-            if let Some(pre) = ver.pre() {
-                write!(f, "-{}", pre)?;
-            }
+            write!(f, "{}", ver.raw_short())?;
             if let Some(short_hash) = short_hash {
                 write!(f, " ({})", short_hash)?;
             } else if let Some(build_code) = ver.build_code() {

@@ -13,6 +13,7 @@ expression: "&release(\"some-api@2020.2-1.2.3\")"
     "revision": 0,
     "pre": "1.2.3",
     "build_code": null,
+    "raw_short": "2020.2-1.2.3",
     "components": 2,
     "raw_quad": [
       "2020",

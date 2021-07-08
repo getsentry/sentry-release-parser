@@ -13,6 +13,7 @@ expression: "&release(\"foo@01.02.003.4-alpha+1234\")"
     "revision": 4,
     "pre": "alpha",
     "build_code": "1234",
+    "raw_short": "01.02.003.4-alpha",
     "components": 4,
     "raw_quad": [
       "01",

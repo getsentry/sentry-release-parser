@@ -13,6 +13,7 @@ expression: "&release(\"com.foogame.FooGame@7211+7211\")"
     "revision": 0,
     "pre": null,
     "build_code": "7211",
+    "raw_short": "7211",
     "components": 1,
     "raw_quad": [
       "7211",

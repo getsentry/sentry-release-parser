@@ -1,0 +1,27 @@
+---
+source: tests/test_serde.rs
+expression: "&release(\"bla-internal@0.0.0.4bfe251b96\")"
+
+---
+{
+  "package": "bla-internal",
+  "version_raw": "0.0.0.4bfe251b96",
+  "version_parsed": {
+    "major": 0,
+    "minor": 0,
+    "patch": 0,
+    "revision": 4,
+    "pre": "bfe251b96",
+    "build_code": null,
+    "raw_short": "0.0.0.4bfe251b96",
+    "components": 4,
+    "raw_quad": [
+      "0",
+      "0",
+      "0",
+      "4"
+    ]
+  },
+  "build_hash": null,
+  "description": "0.0.0.4bfe251b96"
+}
