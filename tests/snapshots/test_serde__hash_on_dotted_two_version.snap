@@ -1,0 +1,27 @@
+---
+source: tests/test_serde.rs
+expression: "&release(\"bla-internal@1.0dev1\")"
+
+---
+{
+  "package": "bla-internal",
+  "version_raw": "1.0dev1",
+  "version_parsed": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0,
+    "revision": 0,
+    "pre": "dev1",
+    "build_code": null,
+    "raw_short": "1.0dev1",
+    "components": 2,
+    "raw_quad": [
+      "1",
+      "0",
+      null,
+      null
+    ]
+  },
+  "build_hash": null,
+  "description": "1.0dev1"
+}
