@@ -38,9 +38,9 @@ fn test_basic_short_ver() {
     assert_eq!(version.build_code(), Some("build-code"));
 
     assert_eq!(release.build_hash(), None);
-    assert_eq!(release.to_string(), "@foo.bar.baz--blah@1.0-a+build-code");
+    assert_eq!(release.to_string(), "@foo.bar.baz--blah@1.0a+build-code");
 
-    assert_eq!(release.describe().to_string(), "1.0-a (build-code)");
+    assert_eq!(release.describe().to_string(), "1.0a (build-code)");
 }
 
 #[test]
@@ -60,10 +60,10 @@ fn test_basic_short_ver_a2() {
     assert_eq!(release.build_hash(), None);
     assert_eq!(
         release.to_string(),
-        "@foo.bar.baz--blah@1.0-alpha2+build-code"
+        "@foo.bar.baz--blah@1.0alpha2+build-code"
     );
 
-    assert_eq!(release.describe().to_string(), "1.0-alpha2 (build-code)");
+    assert_eq!(release.describe().to_string(), "1.0alpha2 (build-code)");
 }
 
 #[test]
@@ -129,10 +129,10 @@ fn test_release_build_note_is_hash() {
     );
     assert_eq!(
         release.to_string(),
-        "@foo.bar.baz--blah@1.0-a+a86d127c4b2f23a0a862620280427dcc01c78676"
+        "@foo.bar.baz--blah@1.0a+a86d127c4b2f23a0a862620280427dcc01c78676"
     );
 
-    assert_eq!(release.describe().to_string(), "1.0-a (a86d127c4b2f)");
+    assert_eq!(release.describe().to_string(), "1.0a (a86d127c4b2f)");
 }
 
 #[test]
@@ -181,12 +181,9 @@ fn test_basic_ios_ver() {
     assert_eq!(version.build_code(), Some("20200101100"));
 
     assert_eq!(release.build_hash(), None);
-    assert_eq!(
-        release.to_string(),
-        "org.example.FooApp@1.0-rc1+20200101100"
-    );
+    assert_eq!(release.to_string(), "org.example.FooApp@1.0rc1+20200101100");
 
-    assert_eq!(release.describe().to_string(), "1.0-rc1 (20200101100)");
+    assert_eq!(release.describe().to_string(), "1.0rc1 (20200101100)");
 }
 
 #[test]
@@ -204,9 +201,9 @@ fn test_basic_ios_ver2() {
     assert_eq!(version.build_code(), Some("1.2.3"));
 
     assert_eq!(release.build_hash(), None);
-    assert_eq!(release.to_string(), "org.example.FooApp@1.0-rc1+1.2.3");
+    assert_eq!(release.to_string(), "org.example.FooApp@1.0rc1+1.2.3");
 
-    assert_eq!(release.describe().to_string(), "1.0-rc1 (1.2.3)");
+    assert_eq!(release.describe().to_string(), "1.0rc1 (1.2.3)");
 }
 
 #[test]

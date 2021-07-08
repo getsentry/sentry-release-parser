@@ -13,6 +13,7 @@ expression: "&release(\"foo.bar.baz.App@1.0.0+20200101100\")"
     "revision": 0,
     "pre": null,
     "build_code": "20200101100",
+    "raw_short": "1.0.0",
     "components": 3,
     "raw_quad": [
       "1",

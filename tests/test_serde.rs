@@ -94,3 +94,13 @@ fn test_empty_version() {
 fn test_not_a_version() {
     assert_release_snapshot!("hackweek@6f85d2f");
 }
+
+#[test]
+fn test_hash_on_dotted_two_version() {
+    assert_release_snapshot!("bla-internal@1.0dev1");
+}
+
+#[test]
+fn test_hash_on_dotted_quad_version() {
+    assert_release_snapshot!("bla-internal@0.0.0.4bfe251b96");
+}

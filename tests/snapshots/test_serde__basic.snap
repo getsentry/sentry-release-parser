@@ -13,6 +13,7 @@ expression: "&release(\"@foo.bar.baz--blah@1.2.3-dev+BUILD-code\")"
     "revision": 0,
     "pre": "dev",
     "build_code": "BUILD-code",
+    "raw_short": "1.2.3-dev",
     "components": 3,
     "raw_quad": [
       "1",

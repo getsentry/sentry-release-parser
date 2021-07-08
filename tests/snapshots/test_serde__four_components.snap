@@ -13,6 +13,7 @@ expression: "&release(\"some-api@1.0.0.0\")"
     "revision": 0,
     "pre": null,
     "build_code": null,
+    "raw_short": "1.0.0.0",
     "components": 4,
     "raw_quad": [
       "1",

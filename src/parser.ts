@@ -34,6 +34,7 @@ export interface Version {
   revision: number;
   pre?: string;
   buildCode?: string;
+  rawShort: string;
   components: number;
   rawQuad: [string, string | null, string | null, string | null];
 }
@@ -88,20 +89,7 @@ export class Release {
     const v = this.versionParsed;
     let rv = "";
     if (v) {
-      const [major, minor, patch, revision] = v.rawQuad;
-      rv += major;
-      if (minor) {
-        rv += `.${minor}`;
-      }
-      if (patch) {
-        rv += `.${patch}`;
-      }
-      if (revision) {
-        rv += `.${revision}`;
-      }
-      if (v.pre) {
-        rv += "-" + v.pre;
-      }
+      rv += v.rawShort;
       if (shortHash) {
         rv += ` (${shortHash})`;
       } else if (v.buildCode) {
@@ -158,6 +146,8 @@ function parseVersion(version: string): Version | null {
   ];
   const components = rawQuad.reduce((acc, cur) => acc + (cur ? 1 : 0), 0);
 
+  const rawShort = match[6] ? version.substr(0, version.indexOf("+")) : version;
+
   return {
     raw: version,
     major: parseInt(match[1], 10),
@@ -166,6 +156,7 @@ function parseVersion(version: string): Version | null {
     revision: parseInt(match[4] || "0", 10),
     pre,
     buildCode: match[6] || undefined,
+    rawShort,
     components,
     rawQuad,
   };
