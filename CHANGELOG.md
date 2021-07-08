@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.2.0
 
 - Retain original version formatting. ([#23](https://github.com/getsentry/sentry-release-parser/pull/23))
 
