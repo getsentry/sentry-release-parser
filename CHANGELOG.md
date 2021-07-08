@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Retain original version formatting. ([#23](https://github.com/getsentry/sentry-release-parser/pull/23))
+
 ## 1.1.4
 
 - Lower compile target to ES6
