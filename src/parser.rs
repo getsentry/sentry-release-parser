@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{cmp::Ordering, fmt};
 
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -103,7 +103,7 @@ impl fmt::Display for InvalidEnvironment {
 }
 
 /// Represents a parsed version.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct Version<'a> {
     raw: &'a str,
     major: &'a str,
@@ -302,6 +302,54 @@ impl<'a> Version<'a> {
         )
     }
 }
+
+impl<'a> Ord for Version<'a> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.quad().cmp(&other.quad()) {
+            Ordering::Equal => {
+                // handle pre-releases first
+                match (self.pre(), other.pre()) {
+                    (None, Some(_)) => return Ordering::Greater,
+                    (Some(_), None) => return Ordering::Less,
+                    (Some(self_pre), Some(other_pre)) => {
+                        match self_pre.cmp(&other_pre) {
+                            Ordering::Equal => {}
+                            other => return other,
+                        };
+                    }
+                    (None, None) => {}
+                }
+
+                // if we have build numbers, compare them
+                if let (Some(self_num), Some(other_num)) =
+                    (self.build_number(), other.build_number())
+                {
+                    return self_num.cmp(&other_num);
+                }
+
+                // lastly compare build code lexicographically
+                self.build_code().cmp(&other.build_code())
+            }
+            other => other,
+        }
+    }
+}
+
+impl<'a> PartialOrd for Version<'a> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<'a> PartialEq for Version<'a> {
+    fn eq(&self, other: &Self) -> bool {
+        self.quad() == other.quad()
+            && self.pre() == other.pre()
+            && self.build_code() == other.build_code()
+    }
+}
+
+impl<'a> Eq for Version<'a> {}
 
 impl<'a> fmt::Display for Version<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -536,4 +584,39 @@ fn test_environment_validation() {
         Err(InvalidEnvironment::BadCharacters)
     );
     assert_eq!(validate_environment("good"), Ok(()));
+}
+
+#[test]
+fn test_version_ordering() {
+    macro_rules! ver {
+        ($v:expr) => {
+            Version::parse($v).unwrap()
+        };
+    }
+
+    assert_eq!(ver!("1.0.0"), ver!("1.0.0"));
+    assert_ne!(ver!("1.1.0"), ver!("1.0.0"));
+    assert_eq!(ver!("1.0"), ver!("1.0.0"));
+    assert_eq!(ver!("1.0dev"), ver!("1.0.0-dev"));
+    assert_eq!(ver!("1.0dev"), ver!("1.0.0.0-dev"));
+    assert_ne!(ver!("1.0dev"), ver!("1.0.0.0-dev1"));
+
+    assert!(ver!("1.0dev") >= ver!("1.0.0.0-dev"));
+    assert!(ver!("1.0dev") < ver!("1.0.0.0"));
+
+    assert!(ver!("1.0.0") > ver!("1.0.0-rc1"));
+    assert!(ver!("1.0.0") >= ver!("1.0.0-rc1"));
+    assert!(ver!("1.0.0-rc1") > ver!("0.9"));
+    assert!(ver!("1.0.0+10") < ver!("1.0.0+20"));
+    assert!(ver!("1.0.0+a") < ver!("1.0.0+b"));
+
+    assert!(ver!("1.0") < ver!("2.0"));
+    assert!(ver!("1.1.0") < ver!("10.0"));
+    assert!(ver!("1.1.0") < ver!("1.1.1"));
+    assert!(ver!("1.1.0.1") < ver!("1.1.0.2"));
+    assert!(ver!("1.1.0.1") > ver!("1.1.0.0"));
+    assert!(ver!("1.1.0.1") > ver!("1.0.0.0"));
+    assert!(ver!("1.1.0.1") > ver!("1.0.42.0"));
+
+    assert!(ver!("1.0+abcd") < ver!("1.0+abcde"));
 }
