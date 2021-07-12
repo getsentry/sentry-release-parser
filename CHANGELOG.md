@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.3.0
 
 - Add ability to compare versions. ([#25](https://github.com/getsentry/sentry-release-parser/pull/25))
 
