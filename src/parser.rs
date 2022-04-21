@@ -312,7 +312,7 @@ impl<'a> Ord for Version<'a> {
                     (None, Some(_)) => return Ordering::Greater,
                     (Some(_), None) => return Ordering::Less,
                     (Some(self_pre), Some(other_pre)) => {
-                        match self_pre.cmp(&other_pre) {
+                        match self_pre.cmp(other_pre) {
                             Ordering::Equal => {}
                             other => return other,
                         };
