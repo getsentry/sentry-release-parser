@@ -32,7 +32,7 @@ lazy_static! {
     static ref HEX_REGEX: Regex = Regex::new(r#"^[a-fA-F0-9]+$"#).unwrap();
     // what can or cannot go through the API which is a limiting factor for
     // releases and environments.
-    static ref VALID_API_ATTRIBUTE_REGEX: Regex = Regex::new(r"^[^/\r\n\t\x0c]*\z").unwrap();
+    static ref VALID_API_ATTRIBUTE_REGEX: Regex = Regex::new(r"^[^\\/\r\n\t\x0c\x00]*\z").unwrap();
 }
 
 /// An error indicating invalid versions.
@@ -312,7 +312,7 @@ impl<'a> Ord for Version<'a> {
                     (None, Some(_)) => return Ordering::Greater,
                     (Some(_), None) => return Ordering::Less,
                     (Some(self_pre), Some(other_pre)) => {
-                        match self_pre.cmp(&other_pre) {
+                        match self_pre.cmp(other_pre) {
                             Ordering::Equal => {}
                             other => return other,
                         };
