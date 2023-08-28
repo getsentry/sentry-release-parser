@@ -12,7 +12,7 @@ use serde::{
 lazy_static! {
     static ref RELEASE_REGEX: Regex = Regex::new(r#"^(@?[^@]+)@(.+?)$"#).unwrap();
     static ref VERSION_REGEX: Regex = Regex::new(
-        r#"(?x)
+        r"(?x)
         ^
             (?P<major>[0-9][0-9]*)
             (?:\.(?P<minor>[0-9][0-9]*))?
@@ -26,7 +26,7 @@ lazy_static! {
                 )?
             (?:\+(?P<build_code>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?
         $
-    "#
+        "
     )
     .unwrap();
     static ref HEX_REGEX: Regex = Regex::new(r#"^[a-fA-F0-9]+$"#).unwrap();
@@ -238,7 +238,7 @@ impl<'a> Version<'a> {
     }
 
     /// If a pre-release identifier is included returns that.
-    pub fn pre(&self) -> Option<&str> {
+    pub fn pre(&self) -> Option<&'a str> {
         if self.pre.is_empty() {
             None
         } else {
@@ -247,7 +247,7 @@ impl<'a> Version<'a> {
     }
 
     /// If a build code is included returns that.
-    pub fn build_code(&self) -> Option<&str> {
+    pub fn build_code(&self) -> Option<&'a str> {
         if self.build_code.is_empty() {
             None
         } else {
@@ -268,7 +268,7 @@ impl<'a> Version<'a> {
     /// Returns the raw version as string.
     ///
     /// It's generally better to use `to_string` which normalizes.
-    pub fn raw(&self) -> &str {
+    pub fn raw(&self) -> &'a str {
         self.raw
     }
 
@@ -278,7 +278,7 @@ impl<'a> Version<'a> {
     /// instead of formatting out the version from the parts, this can
     /// be used to format out the version part as it was input by the
     /// user but still abbreviate the build code.
-    pub fn raw_short(&self) -> &str {
+    pub fn raw_short(&self) -> &'a str {
         self.before_code
     }
 
@@ -293,12 +293,12 @@ impl<'a> Version<'a> {
     }
 
     /// Returns the version quadruple as raw strings.
-    pub fn raw_quad(&self) -> (&str, Option<&str>, Option<&str>, Option<&str>) {
+    pub fn raw_quad(&self) -> (&'a str, Option<&'a str>, Option<&'a str>, Option<&'a str>) {
         (
             self.major,
-            (self.components > 1).then(|| self.minor),
-            (self.components > 2).then(|| self.patch),
-            (self.components > 3).then(|| self.revision),
+            (self.components > 1).then_some(self.minor),
+            (self.components > 2).then_some(self.patch),
+            (self.components > 3).then_some(self.revision),
         )
     }
 }
@@ -446,12 +446,12 @@ impl<'a> Release<'a> {
     /// Returns the raw version.
     ///
     /// It's generally better to use `to_string` which normalizes.
-    pub fn raw(&self) -> &str {
+    pub fn raw(&self) -> &'a str {
         self.raw
     }
 
     /// Returns the contained package information.
-    pub fn package(&self) -> Option<&str> {
+    pub fn package(&self) -> Option<&'a str> {
         if self.package.is_empty() {
             None
         } else {
@@ -463,7 +463,7 @@ impl<'a> Release<'a> {
     ///
     /// This is set even if the version part is not a valid version
     /// (for instance because it's a hash).
-    pub fn version_raw(&self) -> &str {
+    pub fn version_raw(&self) -> &'a str {
         self.version_raw
     }
 
@@ -473,7 +473,7 @@ impl<'a> Release<'a> {
     }
 
     /// Returns the build hash if available.
-    pub fn build_hash(&self) -> Option<&str> {
+    pub fn build_hash(&self) -> Option<&'a str> {
         self.version
             .as_ref()
             .and_then(|x| x.build_code())
