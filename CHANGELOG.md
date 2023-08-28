@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.2
+
+### Various fixes & improvements
+
+- fix: Return borrowed lifetime from all accessor methods (#43) by @jan-auer
+- build(deps): bump ansi-regex from 4.1.0 to 4.1.1 (#33) by @dependabot
+
 ## 1.3.1
 
 - Fix invalid release names by disallowing NUL bytes and other control characters. ([#30](https://github.com/getsentry/sentry-release-parser/pull/30), [#31](https://github.com/getsentry/sentry-release-parser/pull/31))
