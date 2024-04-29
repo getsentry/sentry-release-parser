@@ -246,6 +246,15 @@ impl<'a> Version<'a> {
         }
     }
 
+    /// If a before-code is included returns that.
+    pub fn before_code(&self) -> Option<&'a str> {
+        if self.before_code.is_empty() {
+            None
+        } else {
+            Some(self.before_code)
+        }
+    }
+
     /// If a build code is included returns that.
     pub fn build_code(&self) -> Option<&'a str> {
         if self.build_code.is_empty() {
