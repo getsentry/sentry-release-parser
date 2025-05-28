@@ -13,7 +13,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-    name: 'Release a new version'
+    name: "Release a new version"
     steps:
       - name: Get auth token
         id: token
@@ -21,7 +21,7 @@ jobs:
         with:
           app-id: ${{ vars.SENTRY_RELEASE_BOT_CLIENT_ID }}
           private-key: ${{ secrets.SENTRY_RELEASE_BOT_PRIVATE_KEY }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           token: ${{ steps.token.outputs.token }}
           fetch-depth: 0
