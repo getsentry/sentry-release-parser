@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: actions-rs/toolchain@v1
         with:
@@ -26,74 +26,53 @@ jobs:
           components: clippy, rustfmt
           override: true
 
-      - uses: swatinem/rust-cache@v1
+      - name: Install Rust Toolchain
+        run: |
+          rustup toolchain install stable --profile minimal --no-self-update
+          rustup component add clippy rustfmt rust-docs --toolchain stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          key: ${{ github.job }}
 
       - name: Run Rustfmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+        run: cargo fmt  --all -- --check
 
       - name: Run Clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all-features --tests -- -D clippy::all
+        run: cargo clippy  --all-features --tests -- -D clippy::all
+
+      - name: Check Docs
+        run: cargo doc --workspace --all-features --no-deps --document-private-items
+        env:
+          RUSTDOCFLAGS: -Dwarnings
 
   test:
     name: Test
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - uses: actions-rs/toolchain@v1
+      - name: Install Rust Toolchain
+        run: rustup toolchain install stable --profile minimal --no-self-update
+
+      - uses: swatinem/rust-cache@v2
         with:
-          toolchain: stable
-          profile: minimal
-          override: true
-
-      - uses: swatinem/rust-cache@v1
+          key: ${{ github.job }}
 
       - name: Run Cargo Tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all-features
-
-  doc:
-    name: Docs
-    runs-on: ubuntu-latest
-    env:
-      RUSTDOCFLAGS: -Dwarnings
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          components: rust-docs
-          override: true
-
-      - uses: swatinem/rust-cache@v1
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: doc
-          args: --all-features --document-private-items --no-deps
+        run: cargo test --all-features
 
   js:
     name: JS Test
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - uses: volta-cli/action@v1
+      - uses: volta-cli/action@v4
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         id: cache
         with:
           path: node_modules

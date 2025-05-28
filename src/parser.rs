@@ -160,7 +160,7 @@ impl<'a> Version<'a> {
         // this is a special case we don't want to capture with a regex.  If there is only one
         // single version component and the pre-release marker does not start with a dash, we
         // consider it.  This means 1.0a1 is okay, 1-a1 is as well, but 1a1 is not.
-        if components == 1 && caps.get(5).map_or(false, |x| !x.as_str().starts_with('-')) {
+        if components == 1 && caps.get(5).is_some_and(|x| !x.as_str().starts_with('-')) {
             return Err(InvalidVersion);
         }
 
