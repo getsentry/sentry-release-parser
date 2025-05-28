@@ -16,6 +16,8 @@
     "test": "jest"
   },
   "jest": {
-    "testPathIgnorePatterns": ["tests"]
+    "testPathIgnorePatterns": [
+      "tests"
+    ]
   }
 }
