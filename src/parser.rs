@@ -338,7 +338,6 @@ impl<'a> PartialEq for Version<'a> {
     fn eq(&self, other: &Self) -> bool {
         self.quad() == other.quad()
             && self.pre() == other.pre()
-            && self.build_code() == other.build_code()
     }
 }
 
@@ -609,11 +608,8 @@ fn test_version_ordering() {
     assert!(ver!("1.1.0.1") > ver!("1.0.0.0"));
     assert!(ver!("1.1.0.1") > ver!("1.0.42.0"));
 
-    // build codes are not used in ordering
-    assert!(ver!("1.0.0+10") >= ver!("1.0.0+20"));
-    assert!(ver!("1.0.0+10") <= ver!("1.0.0+20"));
-    assert!(ver!("1.0.0+a") >= ver!("1.0.0+b"));
-    assert!(ver!("1.0.0+a") <= ver!("1.0.0+b"));
-    assert!(ver!("1.0+abcd") >= ver!("1.0+abcde"));
-    assert!(ver!("1.0+abcd") <= ver!("1.0+abcde"));
+    // build codes are not used in comparison
+    assert_eq!(ver!("1.0.0+10"), ver!("1.0.0+20"));
+    assert_eq!(ver!("1.0.0+a"), ver!("1.0.0+b"));
+    assert_eq!(ver!("1.0+abcd"), ver!("1.0+abcde"));
 }
