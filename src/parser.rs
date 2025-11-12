@@ -336,8 +336,7 @@ impl<'a> PartialOrd for Version<'a> {
 
 impl<'a> PartialEq for Version<'a> {
     fn eq(&self, other: &Self) -> bool {
-        self.quad() == other.quad()
-            && self.pre() == other.pre()
+        self.quad() == other.quad() && self.pre() == other.pre()
     }
 }
 
