@@ -320,15 +320,8 @@ impl<'a> Ord for Version<'a> {
                     (None, None) => {}
                 }
 
-                // if we have build numbers, compare them
-                if let (Some(self_num), Some(other_num)) =
-                    (self.build_number(), other.build_number())
-                {
-                    return self_num.cmp(&other_num);
-                }
-
-                // lastly compare build code lexicographically
-                self.build_code().cmp(&other.build_code())
+                // don't use build codes in comparison
+                Ordering::Equal
             }
             other => other,
         }
@@ -607,8 +600,6 @@ fn test_version_ordering() {
     assert!(ver!("1.0.0") > ver!("1.0.0-rc1"));
     assert!(ver!("1.0.0") >= ver!("1.0.0-rc1"));
     assert!(ver!("1.0.0-rc1") > ver!("0.9"));
-    assert!(ver!("1.0.0+10") < ver!("1.0.0+20"));
-    assert!(ver!("1.0.0+a") < ver!("1.0.0+b"));
 
     assert!(ver!("1.0") < ver!("2.0"));
     assert!(ver!("1.1.0") < ver!("10.0"));
@@ -618,5 +609,11 @@ fn test_version_ordering() {
     assert!(ver!("1.1.0.1") > ver!("1.0.0.0"));
     assert!(ver!("1.1.0.1") > ver!("1.0.42.0"));
 
-    assert!(ver!("1.0+abcd") < ver!("1.0+abcde"));
+    // build codes are not used in ordering
+    assert!(ver!("1.0.0+10") >= ver!("1.0.0+20"));
+    assert!(ver!("1.0.0+10") <= ver!("1.0.0+20"));
+    assert!(ver!("1.0.0+a") >= ver!("1.0.0+b"));
+    assert!(ver!("1.0.0+a") <= ver!("1.0.0+b"));
+    assert!(ver!("1.0+abcd") >= ver!("1.0+abcde"));
+    assert!(ver!("1.0+abcd") <= ver!("1.0+abcde"));
 }
