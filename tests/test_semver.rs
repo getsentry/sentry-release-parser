@@ -4,10 +4,7 @@
 use sentry_release_parser::Release;
 
 #[cfg(feature = "semver-1")]
-use {
-    sentry_release_parser::Version,
-    std::cmp::Ordering,
-};
+use {sentry_release_parser::Version, std::cmp::Ordering};
 
 use similar_asserts::assert_eq;
 

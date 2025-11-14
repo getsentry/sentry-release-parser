@@ -247,7 +247,7 @@ impl<'a> Version<'a> {
     }
 
     /// Compares two versions by precedence (ignoring build metadata).
-    /// 
+    ///
     /// Requires the `semver-1` feature.
     #[cfg(feature = "semver-1")]
     pub fn cmp_precedence(&self, other: &Self) -> std::cmp::Ordering {
