@@ -197,7 +197,8 @@ impl<'a> Version<'a> {
     /// Converts the version into a semver (0.9 API).
     ///
     /// Requires the `semver` feature.
-    #[cfg(feature = "semver")]
+    /// If both `semver` and `semver-1` are enabled, `semver-1` takes precedence.
+    #[cfg(all(feature = "semver", not(feature = "semver-1")))]
     pub fn as_semver(&self) -> semver::Version {
         fn split(s: &str) -> Vec<semver::Identifier> {
             s.split('.')

@@ -1,6 +1,6 @@
 #![cfg(any(feature = "semver", feature = "semver-1"))]
 
-#[cfg(feature = "semver")]
+#[cfg(all(feature = "semver", not(feature = "semver-1")))]
 use sentry_release_parser::Release;
 
 #[cfg(feature = "semver-1")]
@@ -8,7 +8,7 @@ use {sentry_release_parser::Version, std::cmp::Ordering};
 
 use similar_asserts::assert_eq;
 
-#[cfg(feature = "semver")]
+#[cfg(all(feature = "semver", not(feature = "semver-1")))]
 #[test]
 fn test_basic() {
     let release = Release::parse("@foo.bar.baz--blah@1.2.3-dev+BUILD-code").unwrap();

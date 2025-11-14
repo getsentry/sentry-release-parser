@@ -25,6 +25,7 @@ assert_eq!(version.build_code(), Some("20200101100"));
 - `semver-1`: if enabled the version object provides methods to convert it
   into a semver (1.0+ API) if it's compatible, and includes the `cmp_precedence`
   method for comparing versions by precedence (ignoring build metadata).
+  If both `semver` and `semver-1` are enabled, `semver-1` takes precedence.
 - `serde`: turns on serde serialization.
 
 License: Apache-2.0
