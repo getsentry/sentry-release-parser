@@ -1,11 +1,5 @@
 # Changelog
 
-## Unreleased
-
-### Various fixes & improvements
-
-- fix(releases): Add semver-1 feature flag for semver 1.0 API with cmp_precedence (#49) by @srest2021
-
 ## 1.3.2
 
 ### Various fixes & improvements
