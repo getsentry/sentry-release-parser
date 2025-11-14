@@ -20,9 +20,9 @@
 //!
 //! - `semver`: if enabled the version object provides a method to convert it
 //!   into a semver (0.9 API) if it's compatible.
-//! - `semver-1`: if enabled the version object provides methods to convert it
-//!   into a semver (1.0+ API) if it's compatible, and includes the `cmp_precedence`
-//!   method for comparing versions by precedence (ignoring build metadata).
+//! - `semver-1`: if enabled the version object provide a method to convert it
+//!   into a semver (1.0+ API) if it's compatible, and a method for comparing
+//!   versions by precedence while ignoring build metadata.
 //! - `serde`: turns on serde serialization.
 mod parser;
 
