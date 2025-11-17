@@ -1,4 +1,4 @@
-#![cfg(all(feature = "semver", not(feature = "semver-1")))]
+#![cfg(feature = "semver")]
 
 use sentry_release_parser::Release;
 use similar_asserts::assert_eq;
