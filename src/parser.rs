@@ -9,6 +9,9 @@ use serde::{
     Serialize,
 };
 
+#[cfg(feature = "semver-1")]
+use semver_1::{BuildMetadata, Prerelease};
+
 lazy_static! {
     static ref RELEASE_REGEX: Regex = Regex::new(r#"^(@?[^@]+)@(.+?)$"#).unwrap();
     static ref VERSION_REGEX: Regex = Regex::new(
@@ -191,7 +194,7 @@ impl<'a> Version<'a> {
         })
     }
 
-    /// Converts the version into a semver.
+    /// Converts the version into a semver (0.9 API).
     ///
     /// Requires the `semver` feature.
     #[cfg(feature = "semver")]
@@ -214,6 +217,32 @@ impl<'a> Version<'a> {
             patch: self.patch(),
             pre: split(self.pre),
             build: split(self.build_code),
+        }
+    }
+
+    /// Converts the version into a semver (1.0 API).
+    ///
+    /// Requires the `semver-1` feature.
+    #[cfg(feature = "semver-1")]
+    pub fn as_semver1(&self) -> semver_1::Version {
+        let pre = if self.pre.is_empty() {
+            Prerelease::EMPTY
+        } else {
+            Prerelease::new(self.pre).unwrap_or(Prerelease::EMPTY)
+        };
+
+        let build = if self.build_code.is_empty() {
+            BuildMetadata::EMPTY
+        } else {
+            BuildMetadata::new(self.build_code).unwrap_or(BuildMetadata::EMPTY)
+        };
+
+        semver_1::Version {
+            major: self.major(),
+            minor: self.minor(),
+            patch: self.patch(),
+            pre,
+            build,
         }
     }
 
