@@ -23,8 +23,7 @@ assert_eq!(version.build_code(), Some("20200101100"));
 - `semver`: if enabled the version object provides a method to convert it
   into a semver (0.9 API) if it's compatible.
 - `semver-1`: if enabled the version object provide a method to convert it
-  into a semver (1.0+ API) if it's compatible, and a method for comparing
-  versions by precedence while ignoring build metadata.
+  into a semver (1.0+ API) if it's compatible.
   If both `semver` and `semver-1` are enabled, `semver-1` takes precedence.
 - `serde`: turns on serde serialization.
 

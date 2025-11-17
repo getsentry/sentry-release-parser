@@ -197,8 +197,7 @@ impl<'a> Version<'a> {
     /// Converts the version into a semver (0.9 API).
     ///
     /// Requires the `semver` feature.
-    /// If both `semver` and `semver-1` are enabled, `semver-1` takes precedence.
-    #[cfg(all(feature = "semver", not(feature = "semver-1")))]
+    #[cfg(feature = "semver")]
     pub fn as_semver(&self) -> semver::Version {
         fn split(s: &str) -> Vec<semver::Identifier> {
             s.split('.')
@@ -225,7 +224,7 @@ impl<'a> Version<'a> {
     ///
     /// Requires the `semver-1` feature.
     #[cfg(feature = "semver-1")]
-    pub fn as_semver(&self) -> semver_1::Version {
+    pub fn as_semver1(&self) -> semver_1::Version {
         let pre = if self.pre.is_empty() {
             Prerelease::EMPTY
         } else {
@@ -245,14 +244,6 @@ impl<'a> Version<'a> {
             pre,
             build,
         }
-    }
-
-    /// Compares two versions by precedence (ignoring build metadata).
-    ///
-    /// Requires the `semver-1` feature.
-    #[cfg(feature = "semver-1")]
-    pub fn cmp_precedence(&self, other: &Self) -> std::cmp::Ordering {
-        self.as_semver().cmp_precedence(&other.as_semver())
     }
 
     /// Returns the major version component.
