@@ -1,5 +1,4 @@
 #![cfg(feature = "semver")]
-
 use sentry_release_parser::Release;
 use similar_asserts::assert_eq;
 
