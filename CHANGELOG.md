@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0
+
+- fix(releases): Add semver-1 feature flag for semver 1.0 API ([#49](https://github.com/getsentry/sentry-release-parser/pull/49))
+
 ## 1.3.2
 
 ### Various fixes & improvements
