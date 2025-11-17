@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.0
+
+### Various fixes & improvements
+
+- fix(releases): Add semver-1 feature flag for semver 1.0 API with cmp_precedence (#49) by @srest2021
+- chore: Upgrade yarn lockfile (#46) by @jan-auer
+- ci(gha): Update all actions (#47) by @jan-auer
+- Replace release bot with GH app (#45) by @Jeffreyhung
+
 ## 1.3.2
 
 ### Various fixes & improvements
