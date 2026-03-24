@@ -17,9 +17,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rs/toolchain@63eb9591781c46a70274cb3ebdf190fce92702e8 # v1
         with:
           toolchain: stable
           profile: minimal
@@ -31,7 +31,7 @@ jobs:
           rustup toolchain install stable --profile minimal --no-self-update
           rustup component add clippy rustfmt rust-docs --toolchain stable
 
-      - uses: swatinem/rust-cache@v2
+      - uses: swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
         with:
           key: ${{ github.job }}
 
@@ -51,12 +51,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Install Rust Toolchain
         run: rustup toolchain install stable --profile minimal --no-self-update
 
-      - uses: swatinem/rust-cache@v2
+      - uses: swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
         with:
           key: ${{ github.job }}
 
@@ -68,11 +68,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - uses: volta-cli/action@v4
+      - uses: volta-cli/action@5c175f92dea6f48441c436471e6479dbc192e194 # v4
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         id: cache
         with:
           path: node_modules
